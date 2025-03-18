@@ -3,6 +3,7 @@
 #include "PLANT_GENERATOR.h"
 #include "PLANT_GENERATORStyle.h"
 #include "PLANT_GENERATORCommands.h"
+#include "SPLANT_WIDGET.h"
 #include "LevelEditor.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
@@ -54,24 +55,11 @@ void FPLANT_GENERATORModule::ShutdownModule()
 
 TSharedRef<SDockTab> FPLANT_GENERATORModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	FText WidgetText = FText::Format(
-		LOCTEXT("WindowWidgetText", "Add code to {0} in {1} to override this window's contents"),
-		FText::FromString(TEXT("FPLANT_GENERATORModule::OnSpawnPluginTab")),
-		FText::FromString(TEXT("PLANT_GENERATOR.cpp"))
-		);
-
 	return SNew(SDockTab)
-		.TabRole(ETabRole::NomadTab)
-		[
-			// Put your tab content here!
-			SNew(SBox)
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Center)
-			[
-				SNew(STextBlock)
-				.Text(WidgetText)
-			]
-		];
+	 .TabRole(ETabRole::NomadTab)
+	 [
+		 SNew(SPLANT_WIDGET)
+	 ];
 }
 
 void FPLANT_GENERATORModule::PluginButtonClicked()
