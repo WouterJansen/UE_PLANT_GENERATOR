@@ -1,6 +1,7 @@
 #include "SPLANT_WIDGET.h"
 #include "SlateOptMacros.h"
 #include "Widgets/Input/SSlider.h"
+#include "Corn_generator.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
@@ -86,6 +87,25 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
                 .OnValueChanged(this, &SPLANT_WIDGET::OnSlider2Changed)
             ]
         ]
+
+        // Generate button
+        + SVerticalBox::Slot()
+        .AutoHeight()
+        .Padding(5)
+        [
+            SNew(SHorizontalBox)
+            + SHorizontalBox::Slot()
+            .AutoWidth()
+            [
+                SNew(STextBlock)
+                .Text(FText::FromString("Generate"))
+            ]
+            + SHorizontalBox::Slot()
+            [
+                SNew(SButton)
+                .OnClicked(this, &SPLANT_WIDGET::OnGenerateClicked)
+            ]
+        ]
     ];
 }
 
@@ -113,3 +133,10 @@ void SPLANT_WIDGET::OnSlider2Changed(float Value)
 {
     SliderValue2 = Value;
 }
+
+FReply SPLANT_WIDGET::OnGenerateClicked()
+{
+    Corn_generator::CreateVariations();
+    return FReply::Handled();
+}
+

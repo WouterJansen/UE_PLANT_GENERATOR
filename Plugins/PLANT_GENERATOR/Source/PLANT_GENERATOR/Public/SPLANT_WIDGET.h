@@ -22,4 +22,5 @@ private:
 	void OnSlider1Changed(float Value);
 	void OnSlider2Changed(float Value);
 	void OnSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type);
+	FReply OnGenerateClicked();
 };
