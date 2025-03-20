@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
+#include "Corn_generator.h"
 
 class SPLANT_WIDGET : public SCompoundWidget
 {
@@ -23,4 +24,6 @@ private:
 	void OnSlider2Changed(float Value);
 	void OnSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type);
 	FReply OnGenerateClicked();
+
+	Corn_generator corn_generator;
 };

@@ -7,6 +7,9 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SPLANT_WIDGET::Construct(const FArguments& InArgs)
 {
+    
+    corn_generator = Corn_generator();
+    
     // Populate dropdown options
     Options.Add(MakeShared<FString>("Corn"));
     Options.Add(MakeShared<FString>("Carrot"));
@@ -136,7 +139,7 @@ void SPLANT_WIDGET::OnSlider2Changed(float Value)
 
 FReply SPLANT_WIDGET::OnGenerateClicked()
 {
-    Corn_generator::CreateVariations();
+    corn_generator.CreateVariation();
     return FReply::Handled();
 }
 

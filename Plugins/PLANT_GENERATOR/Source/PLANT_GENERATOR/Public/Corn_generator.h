@@ -13,9 +13,23 @@ public:
 	Corn_generator();
 	~Corn_generator();
 
-	static UStaticMesh* CreateVariations(FVector2D ScaleRange = FVector2D(0.25f, 4.0f),
-						  float HueVariation = 0.15f, 
-						  float SaturationVariation = 0.2f, 
-						  float ValueVariation = 0.2f, 
-						  FVector2D ShearFactorRange = FVector2D(-0.5f, 1.0f));
+	void CreateVariation();
+	
+private:
+
+	FVector2D m_leaf_ScaleRange;
+	float m_leaf_HueVariation;
+	float m_leaf_SaturationVariation; 
+	float m_leaf_ValueVariation;
+	FVector2D m_leaf_ShearFactorRange;
+
+	FVector2D m_stem_ScaleRange_x_y;
+	FVector2D m_stem_ScaleRange_z;
+	float m_stem_HueVariation;
+	float m_stem_SaturationVariation; 
+	float m_stem_ValueVariation;
+
+	UStaticMeshComponent* CreateLeafVariation();
+	UStaticMeshComponent* CreateStemVariation();
+	void SpawnActor(UStaticMeshComponent* component, FVector3d location);
 };
