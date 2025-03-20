@@ -161,50 +161,54 @@ UStaticMeshComponent* Corn_generator::CreateStemVariation()
 	
 }
 
-void Corn_generator::CreateVariation()
+void Corn_generator::CreateVariation(int amount)
 {
 
-	// Create an array to hold all the leaf components
-	TArray<UStaticMeshComponent*> leafComponents;
-	TArray<FVector3d> RelativePositions;
-
-	// Create the stem component
-	UStaticMeshComponent* NewStemComponent = this->CreateStemVariation();
-
-	// Get the stem's local bounds (without world transform)
-	FVector stemOrigin, stemExtents;
-	NewStemComponent->GetLocalBounds(stemOrigin, stemExtents);  // This gives the local bounds of the mesh
-
-	// Calculate the height based on the local bounds' Z extent
-	float stemHeight = stemExtents.Z * NewStemComponent->GetComponentTransform().GetScale3D().Z;  // Get the full height based on the mesh's Z extents
-
-	// Set the Z-position range based on the stem height (you can adjust this logic as needed)
-	FVector2d zPositionRange(0.0, stemHeight);
-
-	// Create leaves and position them along the stem
-	int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 50));
-
-	float zStep = (zPositionRange.Y - zPositionRange.X) / (numLeaves / 2 + 1);
-
-	for (int i = 0; i < numLeaves; i++)
-	{
-		UStaticMeshComponent* leaf = this->CreateLeafVariation();
-		leafComponents.Add(leaf);
-        
-		// Set relative position for each leaf
-		FVector3d relativePos(0.0f, 0.0f, zPositionRange.X + (FMath::Floor(i / 2) + 1) * zStep);
-		RelativePositions.Add(relativePos);
-
-		// Apply random rotation (±180 degrees)
-		float rotationAngle = i * (180.0f + FMath::RandRange(-10.0f, 10.0f));
-		leaf->SetRelativeRotation(FRotator(0.0f, rotationAngle, 0.0f));
-	}
-
-	// Add the stem as the first component
-	leafComponents.Add(NewStemComponent);
-	RelativePositions.Add(FVector3d(0.0f, 0.0f, 0.0f));  // Stem at the base of the plant
-
-	// Spawn the actor with all components (leaves and stem)
-	SpawnActor(leafComponents, RelativePositions, FVector(0.0f, 0.0f, 0.0f));
+	int plants_per_row = 10;
 	
+	for (int i = 0; i < amount; i++)
+	{
+		// Create an array to hold all the leaf components
+		TArray<UStaticMeshComponent*> leafComponents;
+		TArray<FVector3d> RelativePositions;
+
+		// Create the stem component
+		UStaticMeshComponent* NewStemComponent = this->CreateStemVariation();
+
+		// Get the stem's local bounds (without world transform)
+		FVector stemOrigin, stemExtents;
+		NewStemComponent->GetLocalBounds(stemOrigin, stemExtents);  // This gives the local bounds of the mesh
+
+		// Calculate the height based on the local bounds' Z extent
+		float stemHeight = stemExtents.Z * NewStemComponent->GetComponentTransform().GetScale3D().Z;  // Get the full height based on the mesh's Z extents
+
+		// Set the Z-position range based on the stem height (you can adjust this logic as needed)
+		FVector2d zPositionRange(0.0, stemHeight);
+
+		// Create leaves and position them along the stem
+		int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 25));
+
+		float zStep = (zPositionRange.Y - zPositionRange.X) / (numLeaves / 2 + 1);
+
+		for (int j = 0; j < numLeaves; j++)
+		{
+			UStaticMeshComponent* leaf = this->CreateLeafVariation();
+			leafComponents.Add(leaf);
+        
+			// Set relative position for each leaf
+			FVector3d relativePos(0.0f, 0.0f, zPositionRange.X + (FMath::Floor(j / 2) + 1) * zStep);
+			RelativePositions.Add(relativePos);
+
+			// Apply random rotation (±180 degrees)
+			float rotationAngle = j * (180.0f + FMath::RandRange(-10.0f, 10.0f));
+			leaf->SetRelativeRotation(FRotator(0.0f, rotationAngle, 0.0f));
+		}
+
+		// Add the stem as the first component
+		leafComponents.Add(NewStemComponent);
+		RelativePositions.Add(FVector3d(0.0f, 0.0f, 0.0f));  // Stem at the base of the plant
+
+		// Spawn the actor with all components (leaves and stem)
+		SpawnActor(leafComponents, RelativePositions, FVector(FMath::FloorToInt((float)i / plants_per_row) * 100, (i % plants_per_row) * 100, 0.0f));
+	}
 }

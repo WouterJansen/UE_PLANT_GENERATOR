@@ -13,7 +13,7 @@ public:
 	Corn_generator();
 	~Corn_generator();
 
-	void CreateVariation();
+	void CreateVariation(int amount);
 	
 private:
 

@@ -15,6 +15,7 @@ public:
 private:
 	float SliderValue1 = 0.5f;  // Default value
 	float SliderValue2 = 0.5f;
+	int amount = 0;
 
 	TSharedPtr<FString> SelectedOption;
 	TArray<TSharedPtr<FString>> Options;
@@ -23,6 +24,7 @@ private:
 	void OnSlider1Changed(float Value);
 	void OnSlider2Changed(float Value);
 	void OnSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type);
+	void OnAmountChanged(int value);
 	FReply OnGenerateClicked();
 
 	Corn_generator corn_generator;
