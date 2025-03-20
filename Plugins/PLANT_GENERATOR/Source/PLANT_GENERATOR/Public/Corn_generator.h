@@ -31,5 +31,5 @@ private:
 
 	UStaticMeshComponent* CreateLeafVariation();
 	UStaticMeshComponent* CreateStemVariation();
-	void SpawnActor(UStaticMeshComponent* component, FVector3d location);
+	void SpawnActor(TArray<UStaticMeshComponent*> Components, TArray<FVector3d> RelativePositions, FVector3d ActorLocation);
 };

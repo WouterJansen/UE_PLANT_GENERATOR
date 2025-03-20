@@ -26,31 +26,52 @@ Corn_generator::~Corn_generator()
 {
 }
 
-void Corn_generator::SpawnActor(UStaticMeshComponent* component, FVector3d location)
+void Corn_generator::SpawnActor(TArray<UStaticMeshComponent*> Components, TArray<FVector3d> RelativePositions, FVector3d ActorLocation)
 {
-	// Create an actor (AStaticMeshActor) to hold the transformed component
-	AStaticMeshActor* NewActor = GWorld->SpawnActor<AStaticMeshActor>(component->GetComponentLocation(), component->GetComponentRotation());
-	if (NewActor && component)
-	{
-		// Ensure NewLeafComponent is not already attached to another actor
-		if (component->GetOwner() != nullptr)
-		{
-			// Detach from previous owner
-			component->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-			component->UnregisterComponent();
-		}
+    // Ensure both arrays have the same number of elements
+    if (Components.Num() != RelativePositions.Num())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Components and RelativePositions arrays must have the same number of elements."));
+        return;
+    }
 
-		// Set NewActor as the component's new outer (effectively changing ownership)
-		component->Rename(nullptr, NewActor);
-    
-		// Set as the new root component
-		NewActor->SetRootComponent(component);
-    
-		// Re-register the component so it updates properly
-		component->RegisterComponent();
+    // Create an actor (AStaticMeshActor) to hold the transformed components
+    AStaticMeshActor* NewActor = GWorld->SpawnActor<AStaticMeshActor>(ActorLocation, FRotator::ZeroRotator);
+    if (NewActor)
+    {
+        // Iterate through the provided components and their relative positions
+        for (int i = 0; i < Components.Num(); i++)
+        {
+            UStaticMeshComponent* Component = Components[i];
+            FVector3d RelativePosition = RelativePositions[i];
 
-		NewActor->SetActorLocation(location);	
-	}
+            if (Component)
+            {
+                // Ensure component is not already attached to another actor
+                if (Component->GetOwner() != nullptr)
+                {
+                    // Detach from the previous owner
+                    Component->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+                    Component->UnregisterComponent();
+                }
+
+                // Set NewActor as the component's new outer (effectively changing ownership)
+                Component->Rename(nullptr, NewActor);
+            	
+                // Attach all other components to the root component (or stem)
+                Component->AttachToComponent(NewActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+                // Re-register the component so it updates properly
+                Component->RegisterComponent();
+
+                // Set the relative location based on the passed parameter
+                Component->SetRelativeLocation(FVector(RelativePosition));
+            }
+        }
+
+        // Finally, set the actor's location (it will position all components relative to the actor)
+        NewActor->SetActorLocation(ActorLocation);
+    }
 }
 
 UStaticMeshComponent* Corn_generator::CreateLeafVariation()
@@ -144,19 +165,19 @@ void Corn_generator::CreateVariation()
 {
 
 	TArray<UStaticMeshComponent*> leafComponents;
+	TArray<FVector3d> RelativePositions;
 
 	for (int i = 0; i < 10; i++)
 	{
 		leafComponents.Add(CreateLeafVariation());
+		RelativePositions.Add(FVector3d(0, i*5, 0));
 	}
 
 	UStaticMeshComponent* NewStemComponent = this->CreateStemVariation();
 
-	for (int i = 0; i < leafComponents.Num(); i++)
-	{
-		SpawnActor(leafComponents[i], FVector3d(0, i*2, 0));
-	}
+	leafComponents.Add(NewStemComponent);
+	RelativePositions.Add(FVector3d(0, 0, 0));
 
-	SpawnActor(NewStemComponent, FVector3d(0, 0, 0));
+	SpawnActor(leafComponents, RelativePositions, FVector(0, 0, 0));
 	
 }
