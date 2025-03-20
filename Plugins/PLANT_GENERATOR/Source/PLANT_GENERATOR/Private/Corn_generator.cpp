@@ -13,7 +13,7 @@ Corn_generator::Corn_generator()
 	m_leaf_SaturationVariation = 0.2f;
 	m_leaf_ValueVariation = 0.2f;
 	m_leaf_ScaleRange = FVector2D(1.f, 3.f);
-	m_leaf_ShearFactorRange = FVector2D(-0.5f, 1.5f);
+	m_leaf_ShearFactorRange = FVector2D(0.5f, 1.5f);
 
 	m_stem_HueVariation = 0.15f;
 	m_stem_SaturationVariation = 0.2f;
@@ -95,13 +95,16 @@ UStaticMeshComponent* Corn_generator::CreateLeafVariation()
 	FVector Shear = FVector(
 			FMath::RandRange(m_leaf_ShearFactorRange.X, m_leaf_ShearFactorRange.Y),
 			FMath::RandRange(m_leaf_ShearFactorRange.X, m_leaf_ShearFactorRange.Y),
-			FMath::RandRange(m_leaf_ShearFactorRange.X, m_leaf_ShearFactorRange.Y)
+			FMath::RandRange(m_leaf_ShearFactorRange.X * 2, m_leaf_ShearFactorRange.Y * 2)
 		);
 
 	FMatrix ShearMatrix = FMatrix::Identity;
-	ShearMatrix.M[1][0] = Shear[0];
-	ShearMatrix.M[2][0] = Shear[1];
-
+	ShearMatrix.M[0][1] = Shear[0];
+	ShearMatrix.M[0][2] = Shear[0];
+	ShearMatrix.M[1][0] = Shear[1];
+	ShearMatrix.M[1][2] = Shear[1];
+	ShearMatrix.M[2][0] = Shear[2];
+	ShearMatrix.M[2][1] = Shear[2];
 	FMatrix NewMatrix = ShearMatrix * TransformMatrix;
 
 	FTransform Transform = FTransform(NewMatrix);
@@ -186,7 +189,7 @@ void Corn_generator::CreateVariation(int amount)
 		FVector2d zPositionRange(0.0, stemHeight);
 
 		// Create leaves and position them along the stem
-		int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 25));
+		int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 35));
 
 		float zStep = (zPositionRange.Y - zPositionRange.X) / (numLeaves / 2 + 1);
 
