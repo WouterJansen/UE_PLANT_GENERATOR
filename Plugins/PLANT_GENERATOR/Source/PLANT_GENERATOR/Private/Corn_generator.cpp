@@ -12,14 +12,14 @@ Corn_generator::Corn_generator()
 	m_leaf_HueVariation = 0.15f;
 	m_leaf_SaturationVariation = 0.2f;
 	m_leaf_ValueVariation = 0.2f;
-	m_leaf_ScaleRange = FVector2D(2.f, 4.f);
+	m_leaf_ScaleRange = FVector2D(1.f, 3.f);
 	m_leaf_ShearFactorRange = FVector2D(-0.5f, 1.5f);
 
 	m_stem_HueVariation = 0.15f;
 	m_stem_SaturationVariation = 0.2f;
 	m_stem_ValueVariation = 0.2f;
 	m_stem_ScaleRange_x_y = FVector2D(1.0f, 2.0f);
-	m_stem_ScaleRange_z = FVector2D(0.5f, 1.5f);
+	m_stem_ScaleRange_z = FVector2D(0.2f, 0.75f);
 }
 
 Corn_generator::~Corn_generator()
@@ -182,7 +182,7 @@ void Corn_generator::CreateVariation()
 	FVector2d zPositionRange(0.0, stemHeight);
 
 	// Create leaves and position them along the stem
-	int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 100));
+	int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 50));
 
 	float zStep = (zPositionRange.Y - zPositionRange.X) / (numLeaves / 2 + 1);
 
