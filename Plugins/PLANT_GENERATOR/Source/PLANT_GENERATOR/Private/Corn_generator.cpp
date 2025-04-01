@@ -2,8 +2,6 @@
 
 
 #include "Corn_generator.h"
-
-#include <string>
 #include "Util.h"
 #include "Engine/StaticMeshActor.h"
 
@@ -27,14 +25,14 @@ Corn_generator::~Corn_generator()
 {
 }
 
-void Corn_generator::SpawnActor(TArray<UStaticMeshComponent*> Components, TArray<FVector3d> RelativePositions,
+AActor* Corn_generator::SpawnActor(TArray<UStaticMeshComponent*> Components, TArray<FVector3d> RelativePositions,
                                 FVector3d ActorLocation)
 {
 	// Ensure both arrays have the same number of elements
 	if (Components.Num() != RelativePositions.Num())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Components and RelativePositions arrays must have the same number of elements."));
-		return;
+		return nullptr;
 	}
 
 	// Create an actor (AStaticMeshActor) to hold the transformed components
@@ -75,6 +73,9 @@ void Corn_generator::SpawnActor(TArray<UStaticMeshComponent*> Components, TArray
 		// Finally, set the actor's location (it will position all components relative to the actor)
 		NewActor->SetActorLocation(ActorLocation);
 	}
+
+	return NewActor;
+	
 }
 
 UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage)
@@ -198,7 +199,7 @@ UStaticMeshComponent* Corn_generator::CreateStemVariation(float plantage)
 	return NewStemComponent;
 }
 
-void Corn_generator::CreateVariation(int amount, float plantage)
+void Corn_generator::CreateVariation(int amount, float plantage, FString exportPath)
 {
 	int plants_per_row = 10;
 
@@ -246,7 +247,8 @@ void Corn_generator::CreateVariation(int amount, float plantage)
 		RelativePositions.Add(FVector3d(0.0f, 0.0f, 0.0f)); // Stem at the base of the plant
 
 		// Spawn the actor with all components (leaves and stem)
-		SpawnActor(leafComponents, RelativePositions,
-		           FVector(FMath::FloorToInt((float)i / plants_per_row) * 100, (i % plants_per_row) * 100, 0.0f));
+		AActor* SpawnedActor = SpawnActor(leafComponents, RelativePositions,
+				   FVector(FMath::FloorToInt((float)i / plants_per_row) * 100, (i % plants_per_row) * 100, 0.0f))
+		
 	}
 }

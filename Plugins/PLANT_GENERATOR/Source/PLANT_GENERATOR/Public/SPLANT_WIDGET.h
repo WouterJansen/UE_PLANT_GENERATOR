@@ -18,7 +18,7 @@ private:
 
 	TSharedPtr<FString> SelectedOption;
 	TArray<TSharedPtr<FString>> Options;
-	FString ExportPath;
+	FString exportpath;
 
 	FText GetSelectedOptionText() const;
 	void OnPlantAgeChanged(float Value);

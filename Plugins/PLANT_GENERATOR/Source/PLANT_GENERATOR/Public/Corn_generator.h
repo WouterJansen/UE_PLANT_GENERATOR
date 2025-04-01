@@ -13,7 +13,7 @@ public:
 	Corn_generator();
 	~Corn_generator();
 
-	void CreateVariation(int amount, float plantage);
+	void CreateVariation(int amount, float plantage, FString exportPath);
 	
 private:
 
@@ -32,5 +32,5 @@ private:
 
 	UStaticMeshComponent* CreateLeafVariation(float plantage);
 	UStaticMeshComponent* CreateStemVariation(float plantage);
-	void SpawnActor(TArray<UStaticMeshComponent*> Components, TArray<FVector3d> RelativePositions, FVector3d ActorLocation);
+	AActor* SpawnActor(TArray<UStaticMeshComponent*> Components, TArray<FVector3d> RelativePositions, FVector3d ActorLocation);
 };

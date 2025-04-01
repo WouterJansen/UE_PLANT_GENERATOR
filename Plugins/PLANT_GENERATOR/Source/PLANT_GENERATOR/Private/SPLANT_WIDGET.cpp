@@ -107,7 +107,7 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
            + SHorizontalBox::Slot()
            [
                SNew(SEditableTextBox)
-               .Text(FText::FromString(*ExportPath))
+               .Text(FText::FromString(*exportpath))
                .OnTextCommitted(this, &SPLANT_WIDGET::OnExportPathChanged)
            ]
        ]
@@ -161,12 +161,12 @@ void SPLANT_WIDGET::OnAmountChanged(int value)
 
 FReply SPLANT_WIDGET::OnGenerateClicked()
 {
-    corn_generator.CreateVariation(amount, plantage);
+    corn_generator.CreateVariation(amount, plantage, exportpath);
     return FReply::Handled();
 }
 
 // Export Path Callback
 void SPLANT_WIDGET::OnExportPathChanged(const FText& NewText, ETextCommit::Type CommitType)
 {
-    ExportPath = NewText.ToString();
+    exportpath = NewText.ToString();
 }
