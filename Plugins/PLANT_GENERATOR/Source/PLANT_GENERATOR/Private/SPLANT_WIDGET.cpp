@@ -62,33 +62,13 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
             .AutoWidth()
             [
                 SNew(STextBlock)
-                .Text(FText::FromString("Slider 1:"))
+                .Text(FText::FromString("Plant age:"))
             ]
             + SHorizontalBox::Slot()
             [
                 SNew(SSlider)
-                .Value(this->SliderValue1)
-                .OnValueChanged(this, &SPLANT_WIDGET::OnSlider1Changed)
-            ]
-        ]
-
-        // Slider 2
-        + SVerticalBox::Slot()
-        .AutoHeight()
-        .Padding(5)
-        [
-            SNew(SHorizontalBox)
-            + SHorizontalBox::Slot()
-            .AutoWidth()
-            [
-                SNew(STextBlock)
-                .Text(FText::FromString("Slider 2:"))
-            ]
-            + SHorizontalBox::Slot()
-            [
-                SNew(SSlider)
-                .Value(this->SliderValue2)
-                .OnValueChanged(this, &SPLANT_WIDGET::OnSlider2Changed)
+                .Value(this->plantage)
+                .OnValueChanged(this, &SPLANT_WIDGET::OnPlantAgeChanged)
             ]
         ]
         
@@ -148,15 +128,11 @@ FText SPLANT_WIDGET::GetSelectedOptionText() const
 }
 
 // Slider callbacks
-void SPLANT_WIDGET::OnSlider1Changed(float Value)
+void SPLANT_WIDGET::OnPlantAgeChanged(float Value)
 {
-    SliderValue1 = Value;
+    plantage = Value;
 }
 
-void SPLANT_WIDGET::OnSlider2Changed(float Value)
-{
-    SliderValue2 = Value;
-}
 
 void SPLANT_WIDGET::OnAmountChanged(int value)
 {
@@ -165,7 +141,7 @@ void SPLANT_WIDGET::OnAmountChanged(int value)
 
 FReply SPLANT_WIDGET::OnGenerateClicked()
 {
-    corn_generator.CreateVariation(amount);
+    corn_generator.CreateVariation(amount, plantage);
     return FReply::Handled();
 }
 
