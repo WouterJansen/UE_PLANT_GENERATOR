@@ -248,7 +248,7 @@ void Corn_generator::CreateVariation(int amount, float plantage, FString exportP
 
 		// Spawn the actor with all components (leaves and stem)
 		AActor* SpawnedActor = SpawnActor(leafComponents, RelativePositions,
-				   FVector(FMath::FloorToInt((float)i / plants_per_row) * 100, (i % plants_per_row) * 100, 0.0f))
+				   FVector(FMath::FloorToInt((float)i / plants_per_row) * 100, (i % plants_per_row) * 100, 0.0f));
 		
 	}
 }
