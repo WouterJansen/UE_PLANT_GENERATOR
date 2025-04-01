@@ -18,10 +18,12 @@ private:
 
 	TSharedPtr<FString> SelectedOption;
 	TArray<TSharedPtr<FString>> Options;
+	FString ExportPath;
 
 	FText GetSelectedOptionText() const;
 	void OnPlantAgeChanged(float Value);
 	void OnSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type);
+	void OnExportPathChanged(const FText& NewText, ETextCommit::Type CommitType);
 	void OnAmountChanged(int value);
 	FReply OnGenerateClicked();
 

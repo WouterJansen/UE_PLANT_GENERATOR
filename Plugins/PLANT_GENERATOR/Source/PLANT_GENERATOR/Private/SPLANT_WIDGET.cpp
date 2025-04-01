@@ -92,6 +92,26 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
             ]
         ]
 
+        // Export Path Input
+       + SVerticalBox::Slot()
+       .AutoHeight()
+       .Padding(5)
+       [
+           SNew(SHorizontalBox)
+           + SHorizontalBox::Slot()
+           .AutoWidth()
+           [
+               SNew(STextBlock)
+               .Text(FText::FromString("Export Path:"))
+           ]
+           + SHorizontalBox::Slot()
+           [
+               SNew(SEditableTextBox)
+               .Text(FText::FromString(*ExportPath))
+               .OnTextCommitted(this, &SPLANT_WIDGET::OnExportPathChanged)
+           ]
+       ]
+
         // Generate button
         + SVerticalBox::Slot()
         .AutoHeight()
@@ -145,3 +165,8 @@ FReply SPLANT_WIDGET::OnGenerateClicked()
     return FReply::Handled();
 }
 
+// Export Path Callback
+void SPLANT_WIDGET::OnExportPathChanged(const FText& NewText, ETextCommit::Type CommitType)
+{
+    ExportPath = NewText.ToString();
+}

@@ -80,9 +80,8 @@ void Corn_generator::SpawnActor(TArray<UStaticMeshComponent*> Components, TArray
 UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage)
 {
 	UStaticMesh* RandomLeaf = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Corn/Leaves/");
-
-	UStaticMesh* NewLeaf = DuplicateObject(RandomLeaf, RandomLeaf->GetOuter());
-	UStaticMeshComponent* NewLeafComponent = NewObject<UStaticMeshComponent>(RandomLeaf->GetOuter());
+	UStaticMesh* NewLeaf = DuplicateObject(RandomLeaf, nullptr); // Ensure full duplication
+	UStaticMeshComponent* NewLeafComponent = NewObject<UStaticMeshComponent>(NewLeaf);
 	NewLeafComponent->SetStaticMesh(NewLeaf);
 
 	FVector NewScale = FVector(
@@ -130,8 +129,8 @@ UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage)
 	NewLeafComponent->SetWorldTransform(Transform);
 
 	// Apply material variations
-	UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(
-		NewLeafComponent->GetMaterial(0), RandomLeaf->GetOuter());
+	UMaterialInterface* OriginalMaterial = RandomLeaf->GetMaterial(0);
+	UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(OriginalMaterial, nullptr);
 
 	if (DynamicMaterial)
 	{
@@ -143,6 +142,7 @@ UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage)
 		(1 - plantage) * m_leaf_ValueVariation + FMath::FRandRange(-0.05, 0.05));
 
 		// Apply the dynamic material to the mesh
+		NewLeafComponent->SetMaterial(0, nullptr); // Remove reference before setting
 		NewLeafComponent->SetMaterial(0, DynamicMaterial);
 	}
 
@@ -152,9 +152,8 @@ UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage)
 UStaticMeshComponent* Corn_generator::CreateStemVariation(float plantage)
 {
 	UStaticMesh* RandomStem = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Corn/Stem/");
-
-	UStaticMesh* NewStem = DuplicateObject(RandomStem, RandomStem->GetOuter());
-	UStaticMeshComponent* NewStemComponent = NewObject<UStaticMeshComponent>(RandomStem->GetOuter());
+	UStaticMesh* NewStem = DuplicateObject(RandomStem, nullptr);
+	UStaticMeshComponent* NewStemComponent = NewObject<UStaticMeshComponent>(NewStem);
 	NewStemComponent->SetStaticMesh(NewStem);
 
 	FVector NewScale = FVector(
@@ -178,8 +177,8 @@ UStaticMeshComponent* Corn_generator::CreateStemVariation(float plantage)
 	NewStemComponent->SetWorldScale3D(NewScale);
 
 	// Apply material variations
-	UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(
-		NewStemComponent->GetMaterial(0), RandomStem->GetOuter());
+	UMaterialInterface* OriginalMaterial = RandomStem->GetMaterial(0);
+	UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(OriginalMaterial, nullptr);
 
 	if (DynamicMaterial)
 	{
@@ -192,6 +191,7 @@ UStaticMeshComponent* Corn_generator::CreateStemVariation(float plantage)
 		                                         FMath::FRandRange(-m_stem_ValueVariation, m_stem_ValueVariation));
 
 		// Apply the dynamic material to the mesh
+		NewStemComponent->SetMaterial(0, nullptr);
 		NewStemComponent->SetMaterial(0, DynamicMaterial);
 	}
 
