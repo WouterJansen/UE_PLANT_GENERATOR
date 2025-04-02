@@ -92,25 +92,25 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
             ]
         ]
 
-        // Export Path Input
-       + SVerticalBox::Slot()
-       .AutoHeight()
-       .Padding(5)
-       [
-           SNew(SHorizontalBox)
-           + SHorizontalBox::Slot()
-           .AutoWidth()
-           [
-               SNew(STextBlock)
-               .Text(FText::FromString("Export Path:"))
-           ]
-           + SHorizontalBox::Slot()
-           [
-               SNew(SEditableTextBox)
-               .Text(FText::FromString(*exportpath))
-               .OnTextCommitted(this, &SPLANT_WIDGET::OnExportPathChanged)
-           ]
-       ]
+       //  // Export Path Input
+       // + SVerticalBox::Slot()
+       // .AutoHeight()
+       // .Padding(5)
+       // [
+       //     SNew(SHorizontalBox)
+       //     + SHorizontalBox::Slot()
+       //     .AutoWidth()
+       //     [
+       //         SNew(STextBlock)
+       //         .Text(FText::FromString("Export Path:"))
+       //     ]
+       //     + SHorizontalBox::Slot()
+       //     [
+       //         SNew(SEditableTextBox)
+       //         .Text(FText::FromString(*exportpath))
+       //         .OnTextCommitted(this, &SPLANT_WIDGET::OnExportPathChanged)
+       //     ]
+       // ]
 
         // Generate button
         + SVerticalBox::Slot()
