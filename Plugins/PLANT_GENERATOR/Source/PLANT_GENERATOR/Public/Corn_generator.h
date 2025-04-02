@@ -30,7 +30,6 @@ private:
 	float m_stem_SaturationVariation; 
 	float m_stem_ValueVariation;
 
-	UStaticMeshComponent* CreateLeafVariation(float plantage);
-	UStaticMeshComponent* CreateStemVariation(float plantage);
-	AActor* SpawnActor(TArray<UStaticMeshComponent*> Components, TArray<FVector3d> RelativePositions, FVector3d ActorLocation);
+	UStaticMeshComponent* CreateLeafVariation(float plantage, AActor* NewActor);
+	UStaticMeshComponent* CreateStemVariation(float plantage, AActor* NewActor);
 };

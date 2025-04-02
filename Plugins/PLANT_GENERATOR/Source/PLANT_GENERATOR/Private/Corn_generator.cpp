@@ -3,6 +3,7 @@
 
 #include "Corn_generator.h"
 #include "Util.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 
 Corn_generator::Corn_generator()
@@ -25,65 +26,16 @@ Corn_generator::~Corn_generator()
 {
 }
 
-AActor* Corn_generator::SpawnActor(TArray<UStaticMeshComponent*> Components, TArray<FVector3d> RelativePositions,
-                                FVector3d ActorLocation)
-{
-	// Ensure both arrays have the same number of elements
-	if (Components.Num() != RelativePositions.Num())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Components and RelativePositions arrays must have the same number of elements."));
-		return nullptr;
-	}
-
-	// Create an actor (AStaticMeshActor) to hold the transformed components
-	AStaticMeshActor* NewActor = GWorld->SpawnActor<AStaticMeshActor>(ActorLocation, FRotator::ZeroRotator);
-	if (NewActor)
-	{
-		// Iterate through the provided components and their relative positions
-		for (int i = 0; i < Components.Num(); i++)
-		{
-			UStaticMeshComponent* Component = Components[i];
-			FVector3d RelativePosition = RelativePositions[i];
-
-			if (Component)
-			{
-				// Ensure component is not already attached to another actor
-				if (Component->GetOwner() != nullptr)
-				{
-					// Detach from the previous owner
-					Component->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-					Component->UnregisterComponent();
-				}
-
-				// Set NewActor as the component's new outer (effectively changing ownership)
-				Component->Rename(nullptr, NewActor);
-
-				// Attach all other components to the root component (or stem)
-				Component->AttachToComponent(NewActor->GetRootComponent(),
-				                             FAttachmentTransformRules::KeepRelativeTransform);
-
-				// Re-register the component so it updates properly
-				Component->RegisterComponent();
-
-				// Set the relative location based on the passed parameter
-				Component->SetRelativeLocation(FVector(RelativePosition));
-			}
-		}
-
-		// Finally, set the actor's location (it will position all components relative to the actor)
-		NewActor->SetActorLocation(ActorLocation);
-	}
-
-	return NewActor;
-	
-}
-
-UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage)
+UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage, AActor* NewActor)
 {
 	UStaticMesh* RandomLeaf = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Corn/Leaves/");
-	UStaticMesh* NewLeaf = DuplicateObject(RandomLeaf, nullptr); // Ensure full duplication
-	UStaticMeshComponent* NewLeafComponent = NewObject<UStaticMeshComponent>(NewLeaf);
-	NewLeafComponent->SetStaticMesh(NewLeaf);
+	UInstancedStaticMeshComponent* NewLeafComponent =  Cast<UInstancedStaticMeshComponent>(NewActor->AddComponentByClass(UInstancedStaticMeshComponent::StaticClass(), false, FTransform(), false));
+	NewLeafComponent->SetMobility(EComponentMobility::Movable);
+	NewActor->FinishAddComponent(NewLeafComponent, false, FTransform());
+	NewActor->AddInstanceComponent(NewLeafComponent);
+	NewLeafComponent->SetStaticMesh(RandomLeaf);
+	NewLeafComponent->AddInstance(FTransform());
+	NewLeafComponent->SetNumCustomDataFloats(3);
 
 	FVector NewScale = FVector(
 		FMath::Clamp(
@@ -129,33 +81,23 @@ UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage)
 
 	NewLeafComponent->SetWorldTransform(Transform);
 
-	// Apply material variations
-	UMaterialInterface* OriginalMaterial = RandomLeaf->GetMaterial(0);
-	UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(OriginalMaterial, nullptr);
-
-	if (DynamicMaterial)
-	{
-		DynamicMaterial->SetScalarParameterValue(FName("Hue"),
-		                                         (1 - plantage) * m_leaf_HueVariation + FMath::FRandRange(-0.05, 0.05));
-		DynamicMaterial->SetScalarParameterValue(FName("Saturation"),
-		(1 - plantage) * m_leaf_SaturationVariation + FMath::FRandRange(-0.05, 0.05));
-		DynamicMaterial->SetScalarParameterValue(FName("Value"),
-		(1 - plantage) * m_leaf_ValueVariation + FMath::FRandRange(-0.05, 0.05));
-
-		// Apply the dynamic material to the mesh
-		NewLeafComponent->SetMaterial(0, nullptr); // Remove reference before setting
-		NewLeafComponent->SetMaterial(0, DynamicMaterial);
-	}
+	NewLeafComponent->SetCustomDataValue(0, 0, (1 - plantage) * m_leaf_HueVariation + FMath::FRandRange(-0.05, 0.05));
+	NewLeafComponent->SetCustomDataValue(0, 1, (1 - plantage) * m_leaf_SaturationVariation + FMath::FRandRange(-0.05, 0.05));
+	NewLeafComponent->SetCustomDataValue(0, 2, (1 - plantage) * m_leaf_ValueVariation + FMath::FRandRange(-0.05, 0.05));
 
 	return NewLeafComponent;
 }
 
-UStaticMeshComponent* Corn_generator::CreateStemVariation(float plantage)
+UStaticMeshComponent* Corn_generator::CreateStemVariation(float plantage, AActor* NewActor)
 {
 	UStaticMesh* RandomStem = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Corn/Stem/");
-	UStaticMesh* NewStem = DuplicateObject(RandomStem, nullptr);
-	UStaticMeshComponent* NewStemComponent = NewObject<UStaticMeshComponent>(NewStem);
-	NewStemComponent->SetStaticMesh(NewStem);
+	UInstancedStaticMeshComponent* NewStemComponent =  Cast<UInstancedStaticMeshComponent>(NewActor->AddComponentByClass(UInstancedStaticMeshComponent::StaticClass(), false, FTransform(), false));
+	NewStemComponent->SetMobility(EComponentMobility::Movable);
+	NewActor->FinishAddComponent(NewStemComponent, false, FTransform());
+	NewActor->AddInstanceComponent(NewStemComponent);
+	NewStemComponent->SetStaticMesh(RandomStem);
+	NewStemComponent->AddInstance(FTransform());
+	NewStemComponent->SetNumCustomDataFloats(3);
 
 	FVector NewScale = FVector(
 	FMath::Clamp(
@@ -177,40 +119,24 @@ UStaticMeshComponent* Corn_generator::CreateStemVariation(float plantage)
 
 	NewStemComponent->SetWorldScale3D(NewScale);
 
-	// Apply material variations
-	UMaterialInterface* OriginalMaterial = RandomStem->GetMaterial(0);
-	UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(OriginalMaterial, nullptr);
-
-	if (DynamicMaterial)
-	{
-		DynamicMaterial->SetScalarParameterValue(FName("Hue"),
-		                                         (1 - plantage) * m_stem_HueVariation + FMath::FRandRange(-0.05, 0.05));
-		DynamicMaterial->SetScalarParameterValue(FName("Saturation"),
-		                                         FMath::FRandRange(-m_stem_SaturationVariation,
-		                                                           m_stem_SaturationVariation));
-		DynamicMaterial->SetScalarParameterValue(FName("Value"),
-		                                         FMath::FRandRange(-m_stem_ValueVariation, m_stem_ValueVariation));
-
-		// Apply the dynamic material to the mesh
-		NewStemComponent->SetMaterial(0, nullptr);
-		NewStemComponent->SetMaterial(0, DynamicMaterial);
-	}
-
+	NewStemComponent->SetCustomDataValue(0, 0, (1 - plantage) * m_stem_HueVariation + FMath::FRandRange(-0.05, 0.05));
+	NewStemComponent->SetCustomDataValue(0, 1, (1 - plantage) * m_stem_SaturationVariation + FMath::FRandRange(-0.05, 0.05));
+	NewStemComponent->SetCustomDataValue(0, 2, (1 - plantage) * m_stem_ValueVariation + FMath::FRandRange(-0.05, 0.05));
+	
 	return NewStemComponent;
 }
 
 void Corn_generator::CreateVariation(int amount, float plantage, FString exportPath)
 {
 	int plants_per_row = 10;
-
+	
 	for (int i = 0; i < amount; i++)
 	{
-		// Create an array to hold all the leaf components
-		TArray<UStaticMeshComponent*> leafComponents;
-		TArray<FVector3d> RelativePositions;
 
+		AStaticMeshActor* NewActor = GWorld->SpawnActor<AStaticMeshActor>(FVector(FMath::FloorToInt((float)i / plants_per_row) * 100, (i % plants_per_row) * 100, 0.0f), FRotator::ZeroRotator);
+		
 		// Create the stem component
-		UStaticMeshComponent* NewStemComponent = this->CreateStemVariation(plantage);
+		UStaticMeshComponent* NewStemComponent = this->CreateStemVariation(plantage, NewActor);
 
 		// Get the stem's local bounds (without world transform)
 		FVector stemOrigin, stemExtents;
@@ -230,25 +156,15 @@ void Corn_generator::CreateVariation(int amount, float plantage, FString exportP
 
 		for (int j = 0; j < numLeaves; j++)
 		{
-			UStaticMeshComponent* leaf = this->CreateLeafVariation(plantage);
-			leafComponents.Add(leaf);
+			UStaticMeshComponent* leaf = this->CreateLeafVariation(plantage, NewActor);
 
 			// Set relative position for each leaf
 			FVector3d relativePos(0.0f, 0.0f, zPositionRange.X + (FMath::Floor(j / 2) + 1) * zStep);
-			RelativePositions.Add(relativePos);
+			leaf->SetRelativeLocation(relativePos);
 
 			// Apply random rotation (±180 degrees)
 			float rotationAngle = j * (180.0f + FMath::RandRange(-20.0f, 20.0f));
 			leaf->SetRelativeRotation(FRotator(0.0f, rotationAngle, 0.0f));
 		}
-
-		// Add the stem as the first component
-		leafComponents.Add(NewStemComponent);
-		RelativePositions.Add(FVector3d(0.0f, 0.0f, 0.0f)); // Stem at the base of the plant
-
-		// Spawn the actor with all components (leaves and stem)
-		AActor* SpawnedActor = SpawnActor(leafComponents, RelativePositions,
-				   FVector(FMath::FloorToInt((float)i / plants_per_row) * 100, (i % plants_per_row) * 100, 0.0f));
-		
 	}
 }
