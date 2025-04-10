@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Corn_generator.h"
+#include "Carrot_generator.h"
 
 class SPLANT_WIDGET : public SCompoundWidget
 {
@@ -20,12 +21,16 @@ private:
 	TArray<TSharedPtr<FString>> Options;
 	FString exportpath;
 
+	TSharedPtr<SVerticalBox> CornControls;
+	TSharedPtr<SVerticalBox> CarrotControls;
+	TSharedPtr<SVerticalBox> GrapeControls;
+
 	FText GetSelectedOptionText() const;
 	void OnPlantAgeChanged(float Value);
 	void OnSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type);
-	void OnExportPathChanged(const FText& NewText, ETextCommit::Type CommitType);
 	void OnAmountChanged(int value);
 	FReply OnGenerateClicked();
 
 	Corn_generator corn_generator;
+	Carrot_generator carrot_generator;
 };

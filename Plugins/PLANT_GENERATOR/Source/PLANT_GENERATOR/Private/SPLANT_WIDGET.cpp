@@ -8,7 +8,6 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SPLANT_WIDGET::Construct(const FArguments& InArgs)
 {
-    
     corn_generator = Corn_generator();
     
     // Populate dropdown options
@@ -23,7 +22,7 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
     [
         SNew(SVerticalBox)
 
-        // Dropdown selection
+        // Dropdown selection - always shown
         + SVerticalBox::Slot()
         .AutoHeight()
         .Padding(5)
@@ -52,67 +51,113 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
             ]
         ]
 
-        // Slider 1
+        // Corn-specific controls
         + SVerticalBox::Slot()
         .AutoHeight()
         .Padding(5)
         [
-            SNew(SHorizontalBox)
-            + SHorizontalBox::Slot()
-            .AutoWidth()
+            SAssignNew(CornControls, SVerticalBox)
+            // Only visible when Corn is selected
+            .Visibility_Lambda([this]() {
+                return *SelectedOption == "Corn" ? EVisibility::Visible : EVisibility::Collapsed;
+            })
+
+            // Slider 1
+            + SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(5)
             [
-                SNew(STextBlock)
-                .Text(FText::FromString("Plant age:"))
+                SNew(SHorizontalBox)
+                + SHorizontalBox::Slot()
+                .AutoWidth()
+                [
+                    SNew(STextBlock)
+                    .Text(FText::FromString("Plant age:"))
+                ]
+                + SHorizontalBox::Slot()
+                [
+                    SNew(SSlider)
+                    .Value(this->plantage)
+                    .OnValueChanged(this, &SPLANT_WIDGET::OnPlantAgeChanged)
+                ]
             ]
-            + SHorizontalBox::Slot()
+            
+            // Number of generations
+            + SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(5)
             [
-                SNew(SSlider)
-                .Value(this->plantage)
-                .OnValueChanged(this, &SPLANT_WIDGET::OnPlantAgeChanged)
+                SNew(SHorizontalBox)
+                + SHorizontalBox::Slot()
+                .AutoWidth()
+                [
+                    SNew(STextBlock)
+                    .Text(FText::FromString("Amount:"))
+                ]
+                + SHorizontalBox::Slot()
+                [
+                    SNew(SSpinBox<int>)
+                    .Value(this->amount)
+                    .OnValueChanged(this, &SPLANT_WIDGET::OnAmountChanged)
+                ]
             ]
         ]
-        
-        // Number of generations
+
+        // Carrot-specific controls
         + SVerticalBox::Slot()
         .AutoHeight()
         .Padding(5)
         [
-            SNew(SHorizontalBox)
-            + SHorizontalBox::Slot()
-            .AutoWidth()
+            SAssignNew(CarrotControls, SVerticalBox)
+            // Only visible when Carrot is selected
+            .Visibility_Lambda([this]() {
+                return *SelectedOption == "Carrot" ? EVisibility::Visible : EVisibility::Collapsed;
+            })
+            
+            // Example carrot control
+            // Number of generations
+            + SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(5)
             [
-                SNew(STextBlock)
-                .Text(FText::FromString("Amount:"))
-            ]
-            + SHorizontalBox::Slot()
-            [
-                SNew(SSpinBox<int>)
-                .Value(this->amount)
-                .OnValueChanged(this, &SPLANT_WIDGET::OnAmountChanged)
+                SNew(SHorizontalBox)
+                + SHorizontalBox::Slot()
+                .AutoWidth()
+                [
+                    SNew(STextBlock)
+                    .Text(FText::FromString("Amount:"))
+                ]
+                + SHorizontalBox::Slot()
+                [
+                    SNew(SSpinBox<int>)
+                    .Value(this->amount)
+                    .OnValueChanged(this, &SPLANT_WIDGET::OnAmountChanged)
+                ]
             ]
         ]
 
-       //  // Export Path Input
-       // + SVerticalBox::Slot()
-       // .AutoHeight()
-       // .Padding(5)
-       // [
-       //     SNew(SHorizontalBox)
-       //     + SHorizontalBox::Slot()
-       //     .AutoWidth()
-       //     [
-       //         SNew(STextBlock)
-       //         .Text(FText::FromString("Export Path:"))
-       //     ]
-       //     + SHorizontalBox::Slot()
-       //     [
-       //         SNew(SEditableTextBox)
-       //         .Text(FText::FromString(*exportpath))
-       //         .OnTextCommitted(this, &SPLANT_WIDGET::OnExportPathChanged)
-       //     ]
-       // ]
+        // Grape-specific controls
+        + SVerticalBox::Slot()
+        .AutoHeight()
+        .Padding(5)
+        [
+            SAssignNew(GrapeControls, SVerticalBox)
+            // Only visible when Grape is selected
+            .Visibility_Lambda([this]() {
+                return *SelectedOption == "Grape" ? EVisibility::Visible : EVisibility::Collapsed;
+            })
+            
+            // Example grape control
+            + SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(5)
+            [
+                SNew(STextBlock)
+                .Text(FText::FromString("Grape-specific settings"))
+            ]
+        ]
 
-        // Generate button
+        // Generate button - shown for all options
         + SVerticalBox::Slot()
         .AutoHeight()
         .Padding(5)
@@ -139,6 +184,20 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SPLANT_WIDGET::OnSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type)
 {
     SelectedOption = NewValue;
+    
+    // Update visibility of control groups when selection changes
+    if (CornControls.IsValid())
+    {
+        CornControls->SetVisibility(*SelectedOption == "Corn" ? EVisibility::Visible : EVisibility::Collapsed);
+    }
+    if (CarrotControls.IsValid())
+    {
+        CarrotControls->SetVisibility(*SelectedOption == "Carrot" ? EVisibility::Visible : EVisibility::Collapsed);
+    }
+    if (GrapeControls.IsValid())
+    {
+        GrapeControls->SetVisibility(*SelectedOption == "Grape" ? EVisibility::Visible : EVisibility::Collapsed);
+    }
 }
 
 // Get selected dropdown text
@@ -153,7 +212,6 @@ void SPLANT_WIDGET::OnPlantAgeChanged(float Value)
     plantage = Value;
 }
 
-
 void SPLANT_WIDGET::OnAmountChanged(int value)
 {
     amount = value;
@@ -161,12 +219,17 @@ void SPLANT_WIDGET::OnAmountChanged(int value)
 
 FReply SPLANT_WIDGET::OnGenerateClicked()
 {
-    corn_generator.CreateVariation(amount, plantage, exportpath);
+    if (*SelectedOption == "Corn")
+    {
+        corn_generator.CreateVariation(amount, plantage, exportpath);
+    }
+    else if (*SelectedOption == "Carrot")
+    {
+        carrot_generator.CreateVariation(amount);
+    }
+    else if (*SelectedOption == "Grape")
+    {
+        // Handle grape generation
+    }
     return FReply::Handled();
-}
-
-// Export Path Callback
-void SPLANT_WIDGET::OnExportPathChanged(const FText& NewText, ETextCommit::Type CommitType)
-{
-    exportpath = NewText.ToString();
 }
