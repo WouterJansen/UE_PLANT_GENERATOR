@@ -34,12 +34,17 @@ void Carrot_generator::CreateVariation(int amount)
 		NewActor->AddInstanceComponent(NewCarrotComponent);
 		NewCarrotComponent->SetStaticMesh(RandomCarrot);
 		NewCarrotComponent->AddInstance(FTransform());
-		NewCarrotComponent->SetNumCustomDataFloats(3);
+		NewCarrotComponent->SetNumCustomDataFloats(7);
 
 
 		NewCarrotComponent->SetCustomDataValue(0, 0, FMath::FRandRange(-m_carrot_MinHueVariation, m_carrot_MaxHueVariation));
 		NewCarrotComponent->SetCustomDataValue(0, 1, FMath::FRandRange(-m_carrot_ValueVariation, m_carrot_ValueVariation));
 		NewCarrotComponent->SetCustomDataValue(0, 2,FMath::FRandRange(-m_carrot_SaturationVariation, m_carrot_SaturationVariation));
+
+		NewCarrotComponent->SetCustomDataValue(0, 3, FMath::FRandRange(0.0f, 1.0f));
+		NewCarrotComponent->SetCustomDataValue(0, 4, FMath::FRandRange(0.0f, 1.0f));
+		NewCarrotComponent->SetCustomDataValue(0, 5, FMath::FRandRange(0.0f, 1.0f));
+		NewCarrotComponent->SetCustomDataValue(0, 6, FMath::FRandRange(0.0f, 1.0f));
 
 		FVector NewScale = FVector(
 		FMath::RandRange(m_carrot_ScaleRangeXZ.X, m_carrot_ScaleRangeXZ.Y),
