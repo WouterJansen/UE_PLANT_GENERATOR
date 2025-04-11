@@ -7,7 +7,7 @@ public:
 	Carrot_generator();
 	~Carrot_generator();
 
-	void CreateVariation(int amount);
+	void CreateVariation(int amount, bool cracked);
 
 private:
 	float m_carrot_MinHueVariation;

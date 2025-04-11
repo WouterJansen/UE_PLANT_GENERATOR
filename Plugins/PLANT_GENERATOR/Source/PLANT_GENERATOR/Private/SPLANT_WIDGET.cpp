@@ -3,6 +3,7 @@
 #include "Widgets/Input/SSlider.h"
 #include "Corn_generator.h"
 #include "Widgets/Input/SSpinBox.h"
+#include "Widgets/Input/SCheckBox.h" // Add this include for checkbox support
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
@@ -134,6 +135,26 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
                     .OnValueChanged(this, &SPLANT_WIDGET::OnAmountChanged)
                 ]
             ]
+            
+            // New checkbox for "Cracked" option
+            + SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(5)
+            [
+                SNew(SHorizontalBox)
+                + SHorizontalBox::Slot()
+                .AutoWidth()
+                [
+                    SNew(STextBlock)
+                    .Text(FText::FromString("Cracked:"))
+                ]
+                + SHorizontalBox::Slot()
+                [
+                    SNew(SCheckBox)
+                    .IsChecked(this, &SPLANT_WIDGET::IsCrackedChecked)
+                    .OnCheckStateChanged(this, &SPLANT_WIDGET::OnCrackedChanged)
+                ]
+            ]
         ]
 
         // Grape-specific controls
@@ -180,6 +201,17 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
 
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
+// Add these new functions to handle the checkbox state
+ECheckBoxState SPLANT_WIDGET::IsCrackedChecked() const
+{
+    return cracked ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+}
+
+void SPLANT_WIDGET::OnCrackedChanged(ECheckBoxState NewState)
+{
+    cracked = (NewState == ECheckBoxState::Checked);
+}
+
 // Dropdown selection callback
 void SPLANT_WIDGET::OnSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo::Type)
 {
@@ -225,7 +257,7 @@ FReply SPLANT_WIDGET::OnGenerateClicked()
     }
     else if (*SelectedOption == "Carrot")
     {
-        carrot_generator.CreateVariation(amount);
+        carrot_generator.CreateVariation(amount, cracked); 
     }
     else if (*SelectedOption == "Grape")
     {
