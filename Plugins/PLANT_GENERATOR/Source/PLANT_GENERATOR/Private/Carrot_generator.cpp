@@ -27,7 +27,7 @@ void Carrot_generator::CreateVariation(int amount)
 	{
 		AStaticMeshActor* NewActor = GWorld->SpawnActor<AStaticMeshActor>(FVector(FMath::FloorToInt((float)i / carrots_per_row) * 100, (i % carrots_per_row) * 100, 25), FRotator::ZeroRotator);
 	
-		UStaticMesh* RandomCarrot = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Carrot/");
+		UStaticMesh* RandomCarrot = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Carrot/cracked_carrots");
 		UInstancedStaticMeshComponent* NewCarrotComponent =  Cast<UInstancedStaticMeshComponent>(NewActor->AddComponentByClass(UInstancedStaticMeshComponent::StaticClass(), false, FTransform(), false));
 		NewCarrotComponent->SetMobility(EComponentMobility::Movable);
 		NewActor->FinishAddComponent(NewCarrotComponent, false, FTransform());
