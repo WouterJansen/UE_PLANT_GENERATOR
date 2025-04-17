@@ -23,6 +23,13 @@ def export_carrots_to_glb():
     merge_settings.bake_vertex_data_to_mesh      = True
     merge_settings.use_vertex_data_for_baking_material = True
 
+    mat_proxy = unreal.MaterialProxySettings()
+    mat_proxy.roughness_map          = True
+    mat_proxy.metallic_map           = True
+    mat_proxy.specular_map           = True
+
+    merge_settings.material_settings = mat_proxy
+
     # 4) EXPORT LOOP: merge → export → cleanup
     world = unreal.EditorLevelLibrary.get_editor_world()
     gltf_exporter = unreal.GLTFExporter.get_default_object()
