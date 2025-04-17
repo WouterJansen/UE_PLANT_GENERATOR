@@ -1,7 +1,12 @@
 ﻿#include "Carrot_generator.h"
+
+#include "AssetToolsModule.h"
 #include "Util.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
+#include "Factories/MaterialInstanceConstantFactoryNew.h"
+#include "Materials/MaterialInstanceConstant.h"
 
 Carrot_generator::Carrot_generator()
 {
@@ -36,26 +41,46 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 		{
 			RandomCarrot = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Carrot");
 		}
-		UInstancedStaticMeshComponent* NewCarrotComponent =  Cast<UInstancedStaticMeshComponent>(NewActor->AddComponentByClass(UInstancedStaticMeshComponent::StaticClass(), false, FTransform(), false));
+		
+		UStaticMeshComponent* NewCarrotComponent = Cast<UStaticMeshComponent>(NewActor->GetRootComponent());
 		NewCarrotComponent->SetMobility(EComponentMobility::Movable);
-		NewActor->FinishAddComponent(NewCarrotComponent, false, FTransform());
-		NewActor->AddInstanceComponent(NewCarrotComponent);
 		NewCarrotComponent->SetStaticMesh(RandomCarrot);
-		NewCarrotComponent->AddInstance(FTransform());
-		NewCarrotComponent->SetNumCustomDataFloats(4);
 
-		NewCarrotComponent->SetCustomDataValue(0, 0, FMath::FRandRange(-m_carrot_MinHueVariation, m_carrot_MaxHueVariation));
-		NewCarrotComponent->SetCustomDataValue(0, 1, FMath::FRandRange(-m_carrot_ValueVariation, m_carrot_ValueVariation));
-		NewCarrotComponent->SetCustomDataValue(0, 2,FMath::FRandRange(-m_carrot_SaturationVariation, m_carrot_SaturationVariation));
+		FString PackageName = FString::Printf(TEXT("/Game/GeneratedMaterials/CarrotMaterial_%d"), i);
+		FString AssetName = FString::Printf(TEXT("CarrotMaterial_%d"), i);
+		UPackage* Package = CreatePackage(*PackageName);
 
-		if (cracked == true)
-		{
-			NewCarrotComponent->SetCustomDataValue(0, 3, 0);
-		}
-		else
-		{
-			NewCarrotComponent->SetCustomDataValue(0, 3, 1);
-		}
+		// Create the material instance asset
+		UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
+		Factory->InitialParent = RandomCarrot->GetMaterial(0);
+		FAssetToolsModule& AssetToolsModule = FAssetToolsModule::GetModule();
+		UMaterialInstanceConstant* DynMaterial = Cast<UMaterialInstanceConstant>(
+			AssetToolsModule.Get().CreateAsset(AssetName, FPackageName::GetLongPackagePath(PackageName), UMaterialInstanceConstant::StaticClass(), Factory));
+
+		// Apply random hue, saturation, value variation to the dynamic material
+		float Hue = FMath::FRandRange(-m_carrot_MinHueVariation, m_carrot_MaxHueVariation);
+		float Value = FMath::FRandRange(-m_carrot_ValueVariation, m_carrot_ValueVariation);
+		float Saturation = FMath::FRandRange(-m_carrot_SaturationVariation, m_carrot_SaturationVariation);
+
+		// Assuming the material has parameters named "Hue", "Value", "Saturation", "IsCracked"
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue);
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value);
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation);
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtTextureChoice"), FMath::RandBool());
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtMaskChoice"), FMath::RandBool());
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotEnabled"), cracked ? 1 : 0);
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), FMath::FRandRange(0.f, 1.f));
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtTextureShift"), FMath::FRandRange(0.f, 1.f));
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtStrength"), FMath::FRandRange(0.f, 1.f));
+
+		// Save the material instance asset
+		DynMaterial->PostEditChange();
+		DynMaterial->MarkPackageDirty();
+		FAssetRegistryModule::AssetCreated(DynMaterial);
+		UPackage::SavePackage(Package, DynMaterial, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension()));
+
+		// Apply the saved material to the component
+		NewCarrotComponent->SetMaterial(0, DynMaterial);
 		
 		FVector NewScale = FVector(
 		FMath::RandRange(m_carrot_ScaleRangeXZ.X, m_carrot_ScaleRangeXZ.Y),
