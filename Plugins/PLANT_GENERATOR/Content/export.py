@@ -11,7 +11,6 @@ def export_carrots_to_glb():
     carrots = [
         a for a in all_actors
         if isinstance(a, unreal.StaticMeshActor)
-           and "actor" in a.get_actor_label().lower()
     ]
     unreal.log(f"[CarrotExport] Found {len(carrots)} carrot(s).")
     if not carrots:
