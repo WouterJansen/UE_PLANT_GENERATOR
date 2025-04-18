@@ -46,8 +46,18 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 		NewCarrotComponent->SetMobility(EComponentMobility::Movable);
 		NewCarrotComponent->SetStaticMesh(RandomCarrot);
 
-		FString PackageName = FString::Printf(TEXT("/Game/GeneratedMaterials/CarrotMaterial_%d"), i);
-		FString AssetName = FString::Printf(TEXT("CarrotMaterial_%d"), i);
+		FString BaseAssetName = FString::Printf(TEXT("CarrotMaterial_%d"), i);
+		FString AssetName = BaseAssetName;
+		FString PackagePath = "/Game/GeneratedMaterials";
+		FString PackageName = PackagePath + "/" + AssetName;
+		int32 Suffix = 1;
+
+		while (FPackageName::DoesPackageExist(PackageName))
+		{
+			AssetName = FString::Printf(TEXT("%s_%d"), *BaseAssetName, Suffix++);
+			PackageName = PackagePath + "/" + AssetName;
+		}
+
 		UPackage* Package = CreatePackage(*PackageName);
 
 		// Create the material instance asset
