@@ -7,6 +7,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "Materials/MaterialInstanceConstant.h"
+#include "UObject/PackageRelocation.h"
 
 Carrot_generator::Carrot_generator()
 {
@@ -23,6 +24,111 @@ Carrot_generator::~Carrot_generator()
 {
 }
 
+UMaterialInterface* LoadMaterialByName(const FString& MaterialPath)
+{
+	return Cast<UMaterialInterface>(StaticLoadObject(UMaterialInterface::StaticClass(), nullptr, *MaterialPath));
+}
+
+UMaterialInstanceConstant* CreateMaterialInstance(UMaterialInterface* Material, FString& PackagePath, FString& BaseAssetName)
+
+{
+	FString AssetName = BaseAssetName;
+	FString PackageName = PackagePath + "/" + AssetName;
+	int32 Suffix = 1;
+
+	while (FPackageName::DoesPackageExist(PackageName))
+	{
+		AssetName = FString::Printf(TEXT("%s_%d"), *BaseAssetName, Suffix++);
+		PackageName = PackagePath + "/" + AssetName;
+	}
+
+	UPackage* Package = CreatePackage(*PackageName);
+	
+	auto Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
+	Factory->InitialParent = Material;
+
+	auto& AssetTools = FAssetToolsModule::GetModule().Get();
+	return Cast<UMaterialInstanceConstant>(
+		AssetTools.CreateAsset(AssetName, FPackageName::GetLongPackagePath(PackageName), UMaterialInstanceConstant::StaticClass(), Factory)
+	);
+}
+
+void SavePackage(UMaterialInstanceConstant* DynMaterial)
+{
+	DynMaterial->PostEditChange();
+	DynMaterial->MarkPackageDirty();
+	FAssetRegistryModule::AssetCreated(DynMaterial);
+	UPackage::SavePackage(DynMaterial->GetPackage(), DynMaterial, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FPackageName::LongPackageNameToFilename(
+		DynMaterial->GetOutermost()->GetName(), TEXT(".uasset")));
+}
+
+UMaterialInstanceConstant* CopyMaterialInstanceConstant(UMaterialInstanceConstant* SourceMIC, const FString& BaseAssetName, const FString& PackagePath)
+{
+	if (!SourceMIC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Source MaterialInstanceConstant is null."));
+		return nullptr;
+	}
+
+	FString AssetName = BaseAssetName;
+	FString PackageName = PackagePath + "/" + AssetName;
+	int32 Suffix = 1;
+
+	while (FPackageName::DoesPackageExist(PackageName))
+	{
+		AssetName = FString::Printf(TEXT("%s_%d"), *BaseAssetName, Suffix++);
+		PackageName = PackagePath + "/" + AssetName;
+	}
+
+	UPackage* Package = CreatePackage(*PackageName);
+	
+	if (!Package)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to create package."));
+		return nullptr;
+	}
+
+	// Create the new MIC
+	UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
+	Factory->InitialParent = SourceMIC->Parent;
+
+	UMaterialInstanceConstant* NewMIC = Cast<UMaterialInstanceConstant>(
+		Factory->FactoryCreateNew(UMaterialInstanceConstant::StaticClass(), Package, FName(*AssetName),
+								  RF_Public | RF_Standalone, nullptr, GWarn));
+
+	if (!NewMIC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to create new MIC."));
+		return nullptr;
+	}
+
+	// Copy scalar parameters
+	for (const FScalarParameterValue& Param : SourceMIC->ScalarParameterValues)
+	{
+		NewMIC->SetScalarParameterValueEditorOnly(Param.ParameterInfo.Name, Param.ParameterValue);
+	}
+
+	// Copy vector parameters
+	for (const FVectorParameterValue& Param : SourceMIC->VectorParameterValues)
+	{
+		NewMIC->SetVectorParameterValueEditorOnly(Param.ParameterInfo.Name, Param.ParameterValue);
+	}
+
+	// Copy texture parameters
+	for (const FTextureParameterValue& Param : SourceMIC->TextureParameterValues)
+	{
+		NewMIC->SetTextureParameterValueEditorOnly(Param.ParameterInfo.Name, Param.ParameterValue);
+	}
+
+	// Finalize
+	NewMIC->PostEditChange();
+	NewMIC->MarkPackageDirty();
+
+	FAssetRegistryModule::AssetCreated(NewMIC);
+
+	return NewMIC;
+}
+
 void Carrot_generator::CreateVariation(int amount, bool cracked)
 {
 
@@ -35,7 +141,7 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 		UStaticMesh* RandomCarrot;
 		
 		if (cracked == true){
-			RandomCarrot = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Carrot/cracked_carrots");
+			RandomCarrot = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Carrot/cracked_carrots/");
 		}
 		else
 		{
@@ -46,26 +152,11 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 		NewCarrotComponent->SetMobility(EComponentMobility::Movable);
 		NewCarrotComponent->SetStaticMesh(RandomCarrot);
 
-		FString BaseAssetName = FString::Printf(TEXT("CarrotMaterial_%d"), i);
-		FString AssetName = BaseAssetName;
-		FString PackagePath = "/Game/GeneratedMaterials";
-		FString PackageName = PackagePath + "/" + AssetName;
-		int32 Suffix = 1;
-
-		while (FPackageName::DoesPackageExist(PackageName))
-		{
-			AssetName = FString::Printf(TEXT("%s_%d"), *BaseAssetName, Suffix++);
-			PackageName = PackagePath + "/" + AssetName;
-		}
-
-		UPackage* Package = CreatePackage(*PackageName);
+		FString PackagePath = TEXT("/game/generated_materials");
+		FString AssetName = TEXT("generated_material");
 
 		// Create the material instance asset
-		UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
-		Factory->InitialParent = RandomCarrot->GetMaterial(0);
-		FAssetToolsModule& AssetToolsModule = FAssetToolsModule::GetModule();
-		UMaterialInstanceConstant* DynMaterial = Cast<UMaterialInstanceConstant>(
-			AssetToolsModule.Get().CreateAsset(AssetName, FPackageName::GetLongPackagePath(PackageName), UMaterialInstanceConstant::StaticClass(), Factory));
+		UMaterialInstanceConstant* DynMaterial = CreateMaterialInstance(RandomCarrot->GetMaterial(0), PackagePath, AssetName);
 
 		// Apply random hue, saturation, value variation to the dynamic material
 		float Hue = FMath::FRandRange(-m_carrot_MinHueVariation, m_carrot_MaxHueVariation);
@@ -78,19 +169,49 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation);
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtTextureChoice"), FMath::RandBool());
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtMaskChoice"), FMath::RandBool());
-		DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotEnabled"), cracked ? 1 : 0);
-		DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), FMath::FRandRange(0.5f, 1.f));
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtTextureShift"), FMath::FRandRange(0.f, 1.f));
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtStrength"), FMath::FRandRange(0.f, 1.f));
 
 		// Save the material instance asset
-		DynMaterial->PostEditChange();
-		DynMaterial->MarkPackageDirty();
-		FAssetRegistryModule::AssetCreated(DynMaterial);
-		UPackage::SavePackage(Package, DynMaterial, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension()));
+		SavePackage(DynMaterial);
 
 		// Apply the saved material to the component
 		NewCarrotComponent->SetMaterial(0, DynMaterial);
+		
+		if (cracked)
+		{
+			
+			UMaterialInstanceConstant* CrackedMaterial = CopyMaterialInstanceConstant(DynMaterial, AssetName, PackagePath);
+			CrackedMaterial->SetScalarParameterValueEditorOnly(FName("TextureChoice"), 1.0f);
+			SavePackage(CrackedMaterial);
+			
+			NewCarrotComponent->SetMaterial(1, CrackedMaterial);
+
+			// UMaterialInterface* NoiseMaterial = LoadMaterialByName(TEXT("/PLANT_GENERATOR/Carrot/noise_mat"));
+			//
+			// BaseAssetName = FString::Printf(TEXT("CarrotNoise_%d"), i);
+			// AssetName = BaseAssetName;
+			// PackagePath = "/Game/GeneratedMaterials";
+			// PackageName = PackagePath + "/" + AssetName;
+			// Suffix = 1;
+			//
+			// while (FPackageName::DoesPackageExist(PackageName))
+			// {
+			// 	AssetName = FString::Printf(TEXT("%s_%d"), *BaseAssetName, Suffix++);
+			// 	PackageName = PackagePath + "/" + AssetName;
+			// }
+			//
+			// Package = CreatePackage(*PackageName);
+			//
+			// DynMaterial = CreateMaterialInstance(NoiseMaterial, PackageName, AssetName);
+			//
+			// DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), FMath::FRandRange(0.f, 1.f));
+			//
+			// SavePackage(DynMaterial, PackageName, Package);
+			//
+			// NewCarrotComponent->SetMaterial(2, DynMaterial);
+
+		}
 		
 		FVector NewScale = FVector(
 		FMath::RandRange(m_carrot_ScaleRangeXZ.X, m_carrot_ScaleRangeXZ.Y),
