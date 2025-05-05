@@ -172,6 +172,12 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtTextureShift"), FMath::FRandRange(0.f, 1.f));
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtStrength"), FMath::FRandRange(0.f, 1.f));
 
+		if (cracked)
+		{
+			DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), FMath::FRandRange(0.f, 1.f));
+			DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotEnabled"), 1.0f);
+		}
+
 		// Save the material instance asset
 		SavePackage(DynMaterial);
 
