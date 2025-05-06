@@ -168,13 +168,11 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value);
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation);
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtTextureChoice"), FMath::RandBool());
-		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtMaskChoice"), FMath::RandBool());
-		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtTextureShift"), FMath::FRandRange(0.f, 1.f));
-		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtStrength"), FMath::FRandRange(0.f, 1.f));
+		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtStrength"), FMath::FRandRange(0.f, 0.5f));
 
 		if (cracked)
 		{
-			DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), FMath::FRandRange(0.f, 1.f));
+			DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), FMath::FRandRange(0.f, 100.f));
 			DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotEnabled"), 1.0f);
 		}
 
