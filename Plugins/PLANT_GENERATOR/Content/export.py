@@ -19,8 +19,9 @@ def export_carrots_to_glb():
     # 3) SET UP MERGE SETTINGS (bake materials)
     merge_settings = unreal.MeshMergingSettings()
     merge_settings.merge_materials               = False
-    merge_settings.bake_vertex_data_to_mesh      = True
-    merge_settings.use_vertex_data_for_baking_material = True
+    merge_settings.bake_vertex_data_to_mesh      = False
+    merge_settings.use_vertex_data_for_baking_material = False
+    merge_settings.generate_light_map_uv = False
 
     mat_proxy = unreal.MaterialProxySettings()
     mat_proxy.roughness_map          = True
