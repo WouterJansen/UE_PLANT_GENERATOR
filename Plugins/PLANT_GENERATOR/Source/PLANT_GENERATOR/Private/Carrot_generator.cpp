@@ -170,9 +170,11 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtTextureChoice"), FMath::RandBool());
 		DynMaterial->SetScalarParameterValueEditorOnly(FName("DirtStrength"), FMath::FRandRange(0.f, 0.5f));
 
+		float BlackSpotShift = FMath::FRandRange(0.f, 100.f);
+
 		if (cracked)
 		{
-			DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), FMath::FRandRange(0.f, 100.f));
+			DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), BlackSpotShift);
 			DynMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotEnabled"), 1.0f);
 		}
 
@@ -191,7 +193,12 @@ void Carrot_generator::CreateVariation(int amount, bool cracked)
 			
 			NewCarrotComponent->SetMaterial(1, CrackedMaterial);
 
-			// UMaterialInterface* NoiseMaterial = LoadMaterialByName(TEXT("/PLANT_GENERATOR/Carrot/noise_mat"));
+			UMaterialInstanceConstant* NoiseMaterial = CreateMaterialInstance(LoadMaterialByName(TEXT("/PLANT_GENERATOR/Carrot/noise_mat")), PackagePath, AssetName);
+			NoiseMaterial->SetScalarParameterValueEditorOnly(FName("BlackSpotShift"), BlackSpotShift);
+			SavePackage(NoiseMaterial);
+			NewCarrotComponent->SetMaterial(2, NoiseMaterial);
+
+			// UMaterialInterface* NoiseMaterial = );
 			//
 			// BaseAssetName = FString::Printf(TEXT("CarrotNoise_%d"), i);
 			// AssetName = BaseAssetName;
