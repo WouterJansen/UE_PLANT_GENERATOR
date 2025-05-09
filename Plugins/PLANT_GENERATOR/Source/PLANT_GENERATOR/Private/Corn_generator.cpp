@@ -11,7 +11,7 @@ Corn_generator::Corn_generator()
 	m_leaf_HueVariation = 0.15f;
 	m_leaf_SaturationVariation = 0.2f;
 	m_leaf_ValueVariation = 0.2f;
-	m_leaf_ScaleRange = FVector2D(1.f, 2.f);
+	m_leaf_ScaleRange = FVector2D(1.f, 1.5f);
 	m_leaf_ShearFactorRange_x_y = FVector2D(0.5f, 1.5f);
 	m_leaf_ShearFactorRange_z = FVector2D(0.25f, 3.f);
 
@@ -19,7 +19,7 @@ Corn_generator::Corn_generator()
 	m_stem_SaturationVariation = 0.1f;
 	m_stem_ValueVariation = 0.1f;
 	m_stem_ScaleRange_x_y = FVector2D(1.0f, 2.0f);
-	m_stem_ScaleRange_z = FVector2D(0.1f, 0.9f);
+	m_stem_ScaleRange_z = FVector2D(0.1f, 0.5f);
 }
 
 Corn_generator::~Corn_generator()
@@ -37,19 +37,21 @@ UStaticMeshComponent* Corn_generator::CreateLeafVariation(float plantage, AActor
 	NewLeafComponent->AddInstance(FTransform());
 	NewLeafComponent->SetNumCustomDataFloats(3);
 
+	//Square root scaling for leaf scale -> if plants get really old, they dont grow anymore
+
 	FVector NewScale = FVector(
 		FMath::Clamp(
-			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * plantage + FMath::RandRange(-0.1f, 0.1f),
+			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
 			m_leaf_ScaleRange.X,
 			m_leaf_ScaleRange.Y
 		),
 		FMath::Clamp(
-			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * plantage + FMath::RandRange(-0.1f, 0.1f),
+			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
 			m_leaf_ScaleRange.X,
 			m_leaf_ScaleRange.Y
 		),
 		FMath::Clamp(
-			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * plantage + FMath::RandRange(-0.1f, 0.1f),
+			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
 			m_leaf_ScaleRange.X,
 			m_leaf_ScaleRange.Y
 		)
@@ -99,21 +101,23 @@ UStaticMeshComponent* Corn_generator::CreateStemVariation(float plantage, AActor
 	NewStemComponent->AddInstance(FTransform());
 	NewStemComponent->SetNumCustomDataFloats(3);
 
+	//Square root scaling for stem scale -> if plants get really old, they dont grow anymore
+
 	FVector NewScale = FVector(
 	FMath::Clamp(
-		m_stem_ScaleRange_x_y.X + (m_stem_ScaleRange_x_y.Y - m_stem_ScaleRange_x_y.X) * plantage + FMath::RandRange(-0.1f, 0.1f),
+		m_stem_ScaleRange_x_y.X + (m_stem_ScaleRange_x_y.Y - m_stem_ScaleRange_x_y.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
 		m_stem_ScaleRange_x_y.X,
 		m_stem_ScaleRange_x_y.Y
 	),
 		FMath::Clamp(
-			m_stem_ScaleRange_x_y.X + (m_stem_ScaleRange_x_y.Y - m_stem_ScaleRange_x_y.X) * plantage + FMath::RandRange(-0.1f, 0.1f),
+			m_stem_ScaleRange_x_y.X + (m_stem_ScaleRange_x_y.Y - m_stem_ScaleRange_x_y.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
 			m_stem_ScaleRange_x_y.X,
 			m_stem_ScaleRange_x_y.Y
 		),
 		FMath::Clamp(
-			m_stem_ScaleRange_z.X + (m_stem_ScaleRange_z.Y - m_stem_ScaleRange_z.X) * plantage + FMath::RandRange(-0.1f, 0.1f),
-			m_stem_ScaleRange_z.X,
-			m_stem_ScaleRange_z.Y
+		  m_stem_ScaleRange_z.X + (m_stem_ScaleRange_z.Y - m_stem_ScaleRange_z.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
+		m_stem_ScaleRange_z.X,
+		m_stem_ScaleRange_z.Y
 		)
 	);
 
