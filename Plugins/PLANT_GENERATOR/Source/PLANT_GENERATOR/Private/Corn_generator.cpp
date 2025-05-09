@@ -19,7 +19,7 @@ Corn_generator::Corn_generator()
 	m_stem_SaturationVariation = 0.1f;
 	m_stem_ValueVariation = 0.1f;
 	m_stem_ScaleRange_x_y = FVector2D(1.0f, 2.0f);
-	m_stem_ScaleRange_z = FVector2D(0.1f, 0.5f);
+	m_stem_ScaleRange_z = FVector2D(0.1f, 0.65f);
 }
 
 Corn_generator::~Corn_generator()
@@ -148,13 +148,11 @@ void Corn_generator::CreateVariation(int amount, float plantage, FString exportP
 
 		// Calculate the height based on the local bounds' Z extent
 		float stemHeight = stemExtents.Z * NewStemComponent->GetComponentTransform().GetScale3D().Z;
-		// Get the full height based on the mesh's Z extents
 
-		// Set the Z-position range based on the stem height (you can adjust this logic as needed)
 		FVector2d zPositionRange(0.0, stemHeight);
 
 		// Create leaves and position them along the stem
-		int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 50));
+		int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 65));
 
 		float zStep = (zPositionRange.Y - zPositionRange.X) / (numLeaves / 2 + 1);
 
@@ -167,7 +165,7 @@ void Corn_generator::CreateVariation(int amount, float plantage, FString exportP
 			leaf->SetRelativeLocation(relativePos);
 
 			// Apply random rotation (±180 degrees)
-			float rotationAngle = j * (180.0f + FMath::RandRange(-20.0f, 20.0f));
+			float rotationAngle = j * (180.0f + FMath::RandRange(-10.0f, 10.0f));
 			leaf->SetRelativeRotation(FRotator(0.0f, rotationAngle, 0.0f));
 		}
 	}
