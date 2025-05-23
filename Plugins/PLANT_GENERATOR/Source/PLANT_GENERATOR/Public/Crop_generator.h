@@ -14,7 +14,7 @@ class PLANT_GENERATOR_API UCrop_Generator : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Generators")
-	static void Create_variations(Plant_types GeneratorType, FTransform Location, TMap<FString, float> parameters);
+	static AActor* Create_variations(Plant_types GeneratorType, FTransform Location, TMap<FString, float> parameters);
 
 private:
 	static TUniquePtr<Carrot_generator> CarrotGenerator;

@@ -5,32 +5,35 @@
 TUniquePtr<Carrot_generator> UCrop_Generator::CarrotGenerator = MakeUnique<Carrot_generator>();
 TUniquePtr<Corn_generator> UCrop_Generator::CornGenerator = MakeUnique<Corn_generator>();
 
-void UCrop_Generator::Create_variations(Plant_types GeneratorType, FTransform Location, TMap<FString, float> parameters)
+AActor* UCrop_Generator::Create_variations(Plant_types GeneratorType, FTransform Location, TMap<FString, float> parameters)
 {
 	switch (GeneratorType)
 	{
 	case Plant_types::Carrot:
 		if (CarrotGenerator.IsValid())
 		{
-			CarrotGenerator->CreateVariation(parameters, Location);
+			return CarrotGenerator->CreateVariation(parameters, Location);
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("CarrotGenerator is not initialized!"));
+			return nullptr;
 		}
 		break;
 	case Plant_types::Corn:
 		if (CornGenerator.IsValid())
 		{
-			CornGenerator->CreateVariation(parameters, Location);
+			return CornGenerator->CreateVariation(parameters, Location);
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("CornGenerator is not initialized!"));
+			return nullptr;
 		}
 		break;
 	default:
 		UE_LOG(LogTemp, Warning, TEXT("Unhandled GeneratorType: %d"), static_cast<uint8>(GeneratorType));
+		return nullptr;
 		break;
 	}
 }
