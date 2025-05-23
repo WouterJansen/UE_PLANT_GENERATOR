@@ -251,17 +251,17 @@ void SPLANT_WIDGET::OnAmountChanged(int value)
 
 FReply SPLANT_WIDGET::OnGenerateClicked()
 {
-    if (*SelectedOption == "Corn")
-    {
-        corn_generator.CreateVariation(amount, plantage, exportpath);
-    }
-    else if (*SelectedOption == "Carrot")
-    {
-        carrot_generator.CreateVariation(amount, cracked); 
-    }
-    else if (*SelectedOption == "Grape")
-    {
-        // Handle grape generation
-    }
+    // if (*SelectedOption == "Corn")
+    // {
+    //     corn_generator.CreateVariation(amount, plantage, exportpath);
+    // }
+    // else if (*SelectedOption == "Carrot")
+    // {
+    //     carrot_generator.CreateVariation(amount, cracked); 
+    // }
+    // else if (*SelectedOption == "Grape")
+    // {
+    //     // Handle grape generation
+    // }
     return FReply::Handled();
 }

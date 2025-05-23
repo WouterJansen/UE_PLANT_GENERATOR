@@ -7,13 +7,13 @@
 /**
  * 
  */
-class PLANT_GENERATOR_API Corn_generator
+class PLANT_GENERATOR_API Corn_generator 
 {
 public:
 	Corn_generator();
 	~Corn_generator();
 
-	void CreateVariation(int amount, float plantage, FString exportPath);
+	AActor* CreateVariation(TMap<FString, float> parameters, FTransform startTransform);
 	
 private:
 

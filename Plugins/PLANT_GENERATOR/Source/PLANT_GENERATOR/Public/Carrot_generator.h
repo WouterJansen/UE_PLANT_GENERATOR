@@ -7,7 +7,7 @@ public:
 	Carrot_generator();
 	~Carrot_generator();
 
-	void CreateVariation(int amount, bool cracked);
+	AActor* CreateVariation(TMap<FString, float> parameters, FTransform startTransform);
 
 private:
 	float m_carrot_MinHueVariation;

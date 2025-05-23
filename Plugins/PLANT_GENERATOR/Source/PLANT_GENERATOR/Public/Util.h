@@ -13,4 +13,10 @@ public:
 	Util();
 	~Util();
 	static UStaticMesh* GetRandomMeshFromFolder(const FString& FolderPath);
+	static UMaterialInterface* LoadMaterialByName(const FString& MaterialPath);
+	static UMaterialInstanceConstant* CreateMaterialInstance(UMaterialInterface* Material, FString& PackagePath,
+	                                                  FString& BaseAssetName);
+	static void SavePackage(UMaterialInstanceConstant* DynMaterial);
+	static UMaterialInstanceConstant* CopyMaterialInstanceConstant(UMaterialInstanceConstant* SourceMIC,
+	                                                        const FString& BaseAssetName, const FString& PackagePath);
 };

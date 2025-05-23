@@ -17,7 +17,7 @@
 	"Modules": [
 		{
 			"Name": "PLANT_GENERATOR",
-			"Type": "Editor",
+			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
 	]
