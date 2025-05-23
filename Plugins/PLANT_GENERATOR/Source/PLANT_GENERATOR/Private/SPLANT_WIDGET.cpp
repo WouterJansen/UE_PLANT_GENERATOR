@@ -2,6 +2,7 @@
 #include "SlateOptMacros.h"
 #include "Widgets/Input/SSlider.h"
 #include "Corn_generator.h"
+#include "Chaos/PBDSuspensionConstraintData.h"
 #include "Widgets/Input/SSpinBox.h"
 #include "Widgets/Input/SCheckBox.h" // Add this include for checkbox support
 
@@ -251,17 +252,32 @@ void SPLANT_WIDGET::OnAmountChanged(int value)
 
 FReply SPLANT_WIDGET::OnGenerateClicked()
 {
-    // if (*SelectedOption == "Corn")
-    // {
-    //     corn_generator.CreateVariation(amount, plantage, exportpath);
-    // }
-    // else if (*SelectedOption == "Carrot")
-    // {
-    //     carrot_generator.CreateVariation(amount, cracked); 
-    // }
-    // else if (*SelectedOption == "Grape")
-    // {
-    //     // Handle grape generation
-    // }
+
+    TMap<FString, float> parameters = {};
+
+    if (*SelectedOption == "Corn")
+    {
+        parameters.Add("plantage", plantage);
+        for (int i = 0; i < amount;i++)
+        {
+            FVector location(i * 100.0f, 0.0f, 0.0f); // X increases by 10 units each iteration
+            FTransform transform(location);   
+            corn_generator.CreateVariation(parameters, transform);
+        }
+    }
+    else if (*SelectedOption == "Carrot")
+    {
+        parameters.Add("cracked", (float)cracked);
+        for (int i = 0; i < amount;i++)
+        {
+            FVector location(i * 100.0f, 0.0f, 0.0f); // X increases by 10 units each iteration
+            FTransform transform(location); 
+            carrot_generator.CreateVariation(parameters, transform);
+        }
+    }
+    else if (*SelectedOption == "Grape")
+    {
+        // Handle grape generation
+    }
     return FReply::Handled();
 }
