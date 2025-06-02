@@ -5,6 +5,7 @@
 #include "Plant_types.h"
 #include "Carrot_generator.h"
 #include "Corn_generator.h"
+#include "Grape_generator.h"
 #include "Crop_generator.generated.h"
 
 UCLASS()
@@ -19,5 +20,6 @@ public:
 private:
 	static TUniquePtr<Carrot_generator> CarrotGenerator;
 	static TUniquePtr<Corn_generator> CornGenerator;
+	static TUniquePtr<Grape_generator> GrapeGenerator;
 	
 };
