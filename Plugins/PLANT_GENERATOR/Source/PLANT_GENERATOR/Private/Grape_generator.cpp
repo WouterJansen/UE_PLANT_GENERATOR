@@ -8,7 +8,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
-
+#include "Materials/MaterialInstanceConstant.h"
 
 
 Grape_generator::Grape_generator()
@@ -59,7 +59,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     RachisSpline->SetSplinePoints({ RachisStart, RachisEnd }, ESplineCoordinateSpace::Local);
     RachisSpline->SetClosedLoop(false);
 
-    UStaticMesh* RachisMesh =  Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/cylinders"));
+    UStaticMesh* RachisMesh =  Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/cylinders/beam"));
     USplineMeshComponent* RachisSplineMesh = NewObject<USplineMeshComponent>(NewActor);
     RachisSplineMesh->RegisterComponent();
     RachisSplineMesh->SetMobility(EComponentMobility::Movable);
@@ -81,7 +81,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     
     USplineComponent* PedicelSpline;
     USplineMeshComponent* PedicelMesh;
-    UStaticMesh* StemMesh = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Grape/cylinders");
+    UStaticMesh* StemMesh = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Grape/cylinders/small_beam");
 
     for (int i = 0; i < NumGrapes; ++i)
     {
@@ -147,6 +147,11 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     // Make a copy for the relaxation process
     GrapeFinalPositions = InitialGrapePositions;
 
+    // Apply random hue, saturation, value variation to the dynamic material
+    float Hue = FMath::FRandRange(0, 0.3);
+    float Value = FMath::FRandRange(0.f, 0);
+    float Saturation = FMath::FRandRange(0.f, 0);
+
     // Create grape mesh components at generated positions
     for (int i = 0; i < GrapeFinalPositions.Num(); i++)
     {
@@ -164,7 +169,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
            FTransform LocalTransform;
            LocalTransform.SetLocation(GrapeFinalPositions[i]);
            // Optionally, add random rotation and scale variation to each grape
-           float RandomScale = FMath::RandRange(0.9f, 1.1f);
+           float RandomScale = FMath::RandRange(0.8f, 1.2f);
            LocalTransform.SetScale3D(FVector(RandomScale)); // Scale based on its generated radius relative to max
            
             // --- NEW ROTATION LOGIC ---
@@ -188,6 +193,22 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
 
            GrapeComp->SetRelativeTransform(LocalTransform);
        }
+
+        FString PackagePath = TEXT("/game/generated_materials");
+        FString AssetName = TEXT("generated_material");
+
+        UMaterialInstanceConstant* DynMaterial = Util::CreateMaterialInstance(RandomGrapeMesh->GetMaterial(0), PackagePath, AssetName);
+
+        
+
+        // Assuming the material has parameters named "Hue", "Value", "Saturation", "IsCracked"
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue);
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value);
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation);
+
+        Util::SavePackage(DynMaterial);
+        GrapeComp->SetMaterial(0, DynMaterial);
+        
     }
 
     return NewActor;
