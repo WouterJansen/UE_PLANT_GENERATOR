@@ -6,6 +6,10 @@
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"
+#include "Components/SplineComponent.h"
+#include "Components/SplineMeshComponent.h"
+
+
 
 Grape_generator::Grape_generator()
 {
@@ -44,12 +48,40 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     // Rachis goes from (0,0,0) downwards along -Z axis in local space of the ClusterRootComponent
     const FVector RachisStart = FVector::ZeroVector;
     const FVector RachisDirection = FVector(0, 0, -1); // Downwards
+    
+    USplineComponent* RachisSpline = NewObject<USplineComponent>(NewActor);
+    RachisSpline->RegisterComponent();
+    RachisSpline->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+    RachisSpline->SetMobility(EComponentMobility::Movable);
+
+    FVector RachisEnd = RachisStart + RachisDirection * RachisLength;
+
+    RachisSpline->SetSplinePoints({ RachisStart, RachisEnd }, ESplineCoordinateSpace::Local);
+    RachisSpline->SetClosedLoop(false);
+
+    UStaticMesh* RachisMesh =  Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/cylinders"));
+    USplineMeshComponent* RachisSplineMesh = NewObject<USplineMeshComponent>(NewActor);
+    RachisSplineMesh->RegisterComponent();
+    RachisSplineMesh->SetMobility(EComponentMobility::Movable);
+
+    RachisSplineMesh->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+    FVector RStart, RTangent, REnd, RTangentEnd;
+    RachisSpline->GetLocationAndTangentAtSplinePoint(0, RStart, RTangent, ESplineCoordinateSpace::Local);
+    RachisSpline->GetLocationAndTangentAtSplinePoint(1, REnd, RTangentEnd, ESplineCoordinateSpace::Local);
+
+    RachisSplineMesh->SetStaticMesh(RachisMesh);
+    RachisSplineMesh->SetStartAndEnd(RStart, RTangent, REnd, RTangentEnd);
 
     // Store initial positions before relaxation
     TArray<FVector> InitialGrapePositions;
 
     // Phyllotaxis constant (Golden Angle)
     const float GoldenAngle = 137.5f; // Degrees
+    
+    USplineComponent* PedicelSpline;
+    USplineMeshComponent* PedicelMesh;
+    UStaticMesh* StemMesh = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Grape/cylinders");
 
     for (int i = 0; i < NumGrapes; ++i)
     {
@@ -83,6 +115,33 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
         // 4. Place Berries (Initial Position)
         FVector GrapePos = AttachmentPointOnRachis + PedicelDir * PedicelLength;
         InitialGrapePositions.Add(GrapePos);
+
+        // Create spline for pedicel
+        PedicelSpline = NewObject<USplineComponent>(NewActor);
+        PedicelSpline->RegisterComponent();
+        PedicelSpline->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+        PedicelSpline->SetMobility(EComponentMobility::Movable);
+
+        PedicelSpline->SetSplinePoints({GrapePos, AttachmentPointOnRachis}, ESplineCoordinateSpace::Local);
+        UE_LOG(LogTemp, Warning, TEXT("GrapePos: X=%f Y=%f Z=%f"), GrapePos.X, GrapePos.Y, GrapePos.Z);
+        UE_LOG(LogTemp, Warning, TEXT("AttachmentPointOnRachis: X=%f Y=%f Z=%f"), AttachmentPointOnRachis.X, AttachmentPointOnRachis.Y, AttachmentPointOnRachis.Z);
+
+        PedicelSpline->SetClosedLoop(false);
+
+        // Create a spline mesh component for the pedicel
+        PedicelMesh = NewObject<USplineMeshComponent>(NewActor);
+        PedicelMesh->RegisterComponent();
+        PedicelMesh->SetMobility(EComponentMobility::Movable);
+        PedicelMesh->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+        
+        // Set start and end positions and tangents for the spline mesh
+        FVector StartPos, StartTangent, EndPos, EndTangent;
+        PedicelSpline->GetLocationAndTangentAtSplinePoint(0, StartPos, StartTangent, ESplineCoordinateSpace::Local);
+        PedicelSpline->GetLocationAndTangentAtSplinePoint(1, EndPos, EndTangent, ESplineCoordinateSpace::Local);
+
+        PedicelMesh->SetStaticMesh(StemMesh);
+
+        PedicelMesh->SetStartAndEnd(StartPos, StartTangent, EndPos, EndTangent);
     }
 
     // Make a copy for the relaxation process
