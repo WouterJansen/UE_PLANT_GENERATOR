@@ -33,14 +33,14 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     // --- Parameter Extraction ---
 
     // Number of grapes in the cluster
-    const int NumGrapes = FMath::RandRange(parameters.FindRef("NumGrapesMin", 30.0f), parameters.FindRef("NumGrapesMax", 80.f));
+    const int NumGrapes = FMath::RandRange(parameters.FindRef("NumGrapesMin", 50.0f), parameters.FindRef("NumGrapesMax", 100.f));
     
     // Length of the main rachis (central stem)
     const float RachisLength = FMath::RandRange(parameters.FindRef("RachisLengthMin", 500.0f), parameters.FindRef("RachisLengthMax", 1000.0f)); 
     
     // Length of the pedicel (stem connecting grape to rachis)
     const float PedicelLengthMin = FMath::RandRange(parameters.FindRef("PedicelLengthMin", 50.f), parameters.FindRef("PedicelLengthMinMax", 100.f));
-    const float PedicelLengthMax = FMath::RandRange(parameters.FindRef("PedicelLengthMaxMin", 80.f), parameters.FindRef("PedicelLengthMaxMax", 140.f));
+    const float PedicelLengthMax = FMath::RandRange(parameters.FindRef("PedicelLengthMaxMin", 100.f), parameters.FindRef("PedicelLengthMaxMax", 150.f));
 
     TArray<FVector> GrapeFinalPositions;
 
@@ -90,7 +90,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
         // We can use a slight curve or distribution, but linear is simplest to start.
         // Using a square root distribution to make grapes denser at the top (wider part) of the cluster
         float t = (float)i / (float)(NumGrapes -1 + KINDA_SMALL_NUMBER); // Normalized position along rachis [0,1]
-        float RachisPointT = FMath::Pow(t, 1.0f); // Makes points denser towards start of rachis (t=0)
+        float RachisPointT = 1 - FMath::Pow(t, 0.7f); // Makes points denser towards start of rachis (t=0)
         FVector AttachmentPointOnRachis = RachisStart + RachisDirection * RachisPointT * RachisLength;
 
         // 3. Generate Pedicels
@@ -107,7 +107,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
         // Create a vector perpendicular to rachis for the cone's main axis
         FVector OrthoRachis = FVector(FMath::Cos(FMath::DegreesToRadians(RadialAngle)), FMath::Sin(FMath::DegreesToRadians(RadialAngle)), 0);
         // Tilt this ortho vector slightly downwards
-        float DownTilt = FMath::RandRange(0.1f, 0.5f); // Mix with RachisDirection
+        float DownTilt = FMath::RandRange(0.3f, 0.8f) * RachisPointT; // Mix with RachisDirection
         FVector ConeAxis = (OrthoRachis * (1.0f - DownTilt) + RachisDirection * DownTilt).GetSafeNormal();
         float ConeHalfAngle = 15.0f; // Small cone for pedicel direction variation
         FVector PedicelDir = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ConeAxis, ConeHalfAngle);
@@ -202,9 +202,9 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
         
 
         // Assuming the material has parameters named "Hue", "Value", "Saturation", "IsCracked"
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue);
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value);
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation);
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue + FMath::FRandRange(-0.02f, 0.02f));
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value+ FMath::FRandRange(-0.02f, 0.02f));
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation + FMath::FRandRange(-0.02f, 0.02f));
 
         Util::SavePackage(DynMaterial);
         GrapeComp->SetMaterial(0, DynMaterial);
