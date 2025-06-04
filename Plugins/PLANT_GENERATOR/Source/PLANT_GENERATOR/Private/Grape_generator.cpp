@@ -28,10 +28,10 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     ClusterRootComponent->RegisterComponent();
     
     // Number of grapes in the cluster
-    const int NumGrapes = FMath::RandRange(parameters.FindRef("NumGrapesMin", 80.0f), parameters.FindRef("NumGrapesMax", 120.f));
+    // const int NumGrapes = FMath::RandRange(parameters.FindRef("NumGrapesMin", 80.0f), parameters.FindRef("NumGrapesMax", 120.f));
     
     // Length of the main rachis (central stem)
-    const float RachisLength = FMath::RandRange(parameters.FindRef("RachisLengthMin", 500.0f), parameters.FindRef("RachisLengthMax", 1000.0f)); 
+    const float RachisLength = FMath::RandRange(parameters.FindRef("RachisLengthMin", 500.0f), parameters.FindRef("RachisLengthMax", 1100.0f)); 
     
     // Length of the pedicel (stem connecting grape to rachis)
     const float PedicelLengthMin = FMath::RandRange(parameters.FindRef("PedicelLengthMin", 25.f), parameters.FindRef("PedicelLengthMinMax", 100.f));
@@ -39,7 +39,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     
     // Rachis bending parameters
     const int RachisSegments = FMath::RandRange(parameters.FindRef("RachisSegmentsMin", 3.0f), parameters.FindRef("RachisSegmentsMax", 6.0f));
-    const float RachisBendMagnitude = FMath::RandRange(parameters.FindRef("RachisBendMagnitudeMin", 150.0f), parameters.FindRef("RachisBendMagnitudeMax", 500.0f));
+    const float RachisBendMagnitude = FMath::RandRange(parameters.FindRef("RachisBendMagnitudeMin", 150.0f), parameters.FindRef("RachisBendMagnitudeMax", 1000.0f));
 
     // General direction of bend
     const FVector RachisBendAxis = FVector(
@@ -111,6 +111,9 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     USplineMeshComponent* PedicelMesh;
     UStaticMesh* StemMesh = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Grape/cylinders/small_beam");
 
+    // Scale number of grapes based on rachis length
+    int NumGrapes = RachisLength * PedicelLengthMax / 1000;
+
     for (int i = 0; i < NumGrapes; ++i)
     {
         // Distribute attachment points along the rachis using its length
@@ -178,7 +181,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     }
     
     // Apply random hue, saturation, value variation to the dynamic material
-    float Hue = FMath::FRandRange(0, 0.3);
+    float Hue = FMath::RandBool() ? 0.0f : 0.2f;
     float Value = FMath::FRandRange(0.f, 0); 
     float Saturation = FMath::FRandRange(0.f, 0);
 
