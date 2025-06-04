@@ -81,7 +81,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     RachisSpline->UpdateSpline(); 
     RachisSpline->SetClosedLoop(false);
 
-    UStaticMesh* RachisMesh =  Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/cylinders/beam"));
+    UStaticMesh* RachisMesh =  Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/cylinders/small_beam"));
     
     // Create multiple SplineMeshComponents for the rachis segments
     for (int i = 0; i < RachisSpline->GetNumberOfSplinePoints() - 1; ++i)
@@ -230,9 +230,9 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
 
         UMaterialInstanceConstant* DynMaterial = Util::CreateMaterialInstance(RandomGrapeMesh->GetMaterial(0), PackagePath, AssetName);
 
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue + FMath::FRandRange(-0.01f, 0.01f));
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value+ FMath::FRandRange(-0.02f, 0.02f));
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation + FMath::FRandRange(-0.02f, 0.02f));
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue + FMath::FRandRange(-0.02f, 0.02f));
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value+ FMath::FRandRange(-0.01f, 0.01f));
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation + FMath::FRandRange(-0.1f, 0.1f));
 
         Util::SavePackage(DynMaterial);
         GrapeComp->SetMaterial(0, DynMaterial);
