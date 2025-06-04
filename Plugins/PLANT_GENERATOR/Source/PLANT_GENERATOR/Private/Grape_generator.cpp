@@ -182,8 +182,14 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     
     // Apply random hue, saturation, value variation to the dynamic material
     float Hue = FMath::RandBool() ? 0.0f : 0.2f;
-    float Value = FMath::FRandRange(0.f, 0); 
-    float Saturation = FMath::FRandRange(0.f, 0);
+    float Value = FMath::FRandRange(0.f, 0);
+    float Saturation = 0.0f;
+    if (Hue == 0.f)
+        Saturation = FMath::FRandRange(-0.5f, 0.1);
+    else
+    {
+        Saturation = FMath::FRandRange(-0.1f, 0.1);
+    }
 
     // Create grape mesh components at generated positions
     for (int i = 0; i < InitialGrapePositions.Num(); i++)
@@ -224,7 +230,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
 
         UMaterialInstanceConstant* DynMaterial = Util::CreateMaterialInstance(RandomGrapeMesh->GetMaterial(0), PackagePath, AssetName);
 
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue + FMath::FRandRange(-0.02f, 0.02f));
+        DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue + FMath::FRandRange(-0.01f, 0.01f));
         DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value+ FMath::FRandRange(-0.02f, 0.02f));
         DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation + FMath::FRandRange(-0.02f, 0.02f));
 
