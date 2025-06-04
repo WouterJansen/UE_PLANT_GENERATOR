@@ -1,17 +1,13 @@
 #include "SPLANT_WIDGET.h"
 #include "SlateOptMacros.h"
 #include "Widgets/Input/SSlider.h"
-#include "Corn_generator.h"
-#include "Chaos/PBDSuspensionConstraintData.h"
 #include "Widgets/Input/SSpinBox.h"
-#include "Widgets/Input/SCheckBox.h" // Add this include for checkbox support
-
+#include "Widgets/Input/SCheckBox.h"
+#include "Crop_generator.h"
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SPLANT_WIDGET::Construct(const FArguments& InArgs)
 {
-    corn_generator = Corn_generator();
-    
     // Populate dropdown options
     Options.Add(MakeShared<FString>("Corn"));
     Options.Add(MakeShared<FString>("Carrot"));
@@ -169,14 +165,26 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
                 return *SelectedOption == "Grape" ? EVisibility::Visible : EVisibility::Collapsed;
             })
             
-            // Example grape control
-            + SVerticalBox::Slot()
-            .AutoHeight()
-            .Padding(5)
-            [
-                SNew(STextBlock)
-                .Text(FText::FromString("Grape-specific settings"))
-            ]
+            // Example carrot control
+           // Number of generations
+           + SVerticalBox::Slot()
+           .AutoHeight()
+           .Padding(5)
+           [
+               SNew(SHorizontalBox)
+               + SHorizontalBox::Slot()
+               .AutoWidth()
+               [
+                   SNew(STextBlock)
+                   .Text(FText::FromString("Amount:"))
+               ]
+               + SHorizontalBox::Slot()
+               [
+                   SNew(SSpinBox<int>)
+                   .Value(this->amount)
+                   .OnValueChanged(this, &SPLANT_WIDGET::OnAmountChanged)
+               ]
+           ]
         ]
 
         // Generate button - shown for all options
@@ -260,9 +268,9 @@ FReply SPLANT_WIDGET::OnGenerateClicked()
         parameters.Add("plantage", plantage);
         for (int i = 0; i < amount;i++)
         {
-            FVector location(i * 100.0f, 0.0f, 0.0f); // X increases by 10 units each iteration
+            FVector location(i * 100.0f, 0.0f, 0.0f); 
             FTransform transform(location);   
-            corn_generator.CreateVariation(parameters, transform);
+            UCrop_Generator::Create_variations(Plant_types::Carrot, transform, parameters);
         }
     }
     else if (*SelectedOption == "Carrot")
@@ -270,14 +278,20 @@ FReply SPLANT_WIDGET::OnGenerateClicked()
         parameters.Add("cracked", (float)cracked);
         for (int i = 0; i < amount;i++)
         {
-            FVector location(i * 100.0f, 0.0f, 0.0f); // X increases by 10 units each iteration
+            FVector location(i * 100.0f, 0.0f, 0.0f); 
             FTransform transform(location); 
-            carrot_generator.CreateVariation(parameters, transform);
+            UCrop_Generator::Create_variations(Plant_types::Carrot, transform, parameters);
         }
     }
     else if (*SelectedOption == "Grape")
     {
-        // Handle grape generation
+        GEditor->GetEditorWorldContext().World()->bIsRunningConstructionScript = false;
+        for (int i = 0; i < amount;i++)
+        {
+            FVector location(i * 1000.0f, 0.0f, 0.0f); 
+            FTransform transform(location); 
+            UCrop_Generator::Create_variations(Plant_types::Grape, transform, parameters);
+        }
     }
     return FReply::Handled();
 }

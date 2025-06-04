@@ -23,7 +23,6 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     AStaticMeshActor* NewActor = GWorld->SpawnActor<AStaticMeshActor>(startTransform.GetLocation(), startTransform.GetRotation().Rotator());
     USceneComponent* ClusterRootComponent = Cast<UStaticMeshComponent>(NewActor->GetRootComponent());
     NewActor->SetRootComponent(ClusterRootComponent);
-    ClusterRootComponent->RegisterComponent();
     
     // Number of grapes in the cluster
     // const int NumGrapes = FMath::RandRange(parameters.FindRef("NumGrapesMin", 80.0f), parameters.FindRef("NumGrapesMax", 120.f));
@@ -225,7 +224,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
 
         FString PackagePath = TEXT("/game/generated_materials");
         FString AssetName = TEXT("generated_material"); 
-
+        
         UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(RandomGrapeMesh->GetMaterial(0), GetTransientPackage());
         DynMaterial->SetScalarParameterValue(FName("Hue"), Hue + FMath::FRandRange(-0.02f, 0.02f));
         DynMaterial->SetScalarParameterValue(FName("Value"), Value+ FMath::FRandRange(-0.01f, 0.01f));

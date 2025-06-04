@@ -4,6 +4,7 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Corn_generator.h"
 #include "Carrot_generator.h"
+#include "Grape_generator.h"
 
 class SPLANT_WIDGET : public SCompoundWidget
 {
@@ -34,7 +35,4 @@ private:
 	bool cracked = false;
 	ECheckBoxState IsCrackedChecked() const;
 	void OnCrackedChanged(ECheckBoxState NewState);
-
-	Corn_generator corn_generator;
-	Carrot_generator carrot_generator;
 };
