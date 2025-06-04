@@ -23,59 +23,87 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
 {
 
     AStaticMeshActor* NewActor = GWorld->SpawnActor<AStaticMeshActor>(startTransform.GetLocation(), startTransform.GetRotation().Rotator());
-
-    // It's good practice to create a new root component if you plan to attach many children,
-    // or ensure the default one is suitable. For a cluster, a USceneComponent as root is often best.
     USceneComponent* ClusterRootComponent = Cast<UStaticMeshComponent>(NewActor->GetRootComponent());
     NewActor->SetRootComponent(ClusterRootComponent);
     ClusterRootComponent->RegisterComponent();
-
-    // --- Parameter Extraction ---
-
+    
     // Number of grapes in the cluster
-    const int NumGrapes = FMath::RandRange(parameters.FindRef("NumGrapesMin", 50.0f), parameters.FindRef("NumGrapesMax", 100.f));
+    const int NumGrapes = FMath::RandRange(parameters.FindRef("NumGrapesMin", 80.0f), parameters.FindRef("NumGrapesMax", 120.f));
     
     // Length of the main rachis (central stem)
     const float RachisLength = FMath::RandRange(parameters.FindRef("RachisLengthMin", 500.0f), parameters.FindRef("RachisLengthMax", 1000.0f)); 
     
     // Length of the pedicel (stem connecting grape to rachis)
-    const float PedicelLengthMin = FMath::RandRange(parameters.FindRef("PedicelLengthMin", 50.f), parameters.FindRef("PedicelLengthMinMax", 100.f));
-    const float PedicelLengthMax = FMath::RandRange(parameters.FindRef("PedicelLengthMaxMin", 100.f), parameters.FindRef("PedicelLengthMaxMax", 150.f));
+    const float PedicelLengthMin = FMath::RandRange(parameters.FindRef("PedicelLengthMin", 25.f), parameters.FindRef("PedicelLengthMinMax", 100.f));
+    const float PedicelLengthMax = FMath::RandRange(parameters.FindRef("PedicelLengthMaxMin", 100.f), parameters.FindRef("PedicelLengthMaxMax", 200.f));
+    
+    // Rachis bending parameters
+    const int RachisSegments = FMath::RandRange(parameters.FindRef("RachisSegmentsMin", 3.0f), parameters.FindRef("RachisSegmentsMax", 6.0f));
+    const float RachisBendMagnitude = FMath::RandRange(parameters.FindRef("RachisBendMagnitudeMin", 150.0f), parameters.FindRef("RachisBendMagnitudeMax", 500.0f));
+
+    // General direction of bend
+    const FVector RachisBendAxis = FVector(
+        FMath::RandRange(parameters.FindRef("RachisBendAxisXmin", 0.0f), parameters.FindRef("RachisBendAxisXmax", 1.0f)),
+        FMath::RandRange(parameters.FindRef("RachisBendAxisYmin", 0.0f), parameters.FindRef("RachisBendAxisYmax", 1.0f)),
+        FMath::RandRange(parameters.FindRef("RachisBendAxisZmin", 0.0f), parameters.FindRef("RachisBendAxisXmax", 1.0f))
+    ).GetSafeNormal();
 
     TArray<FVector> GrapeFinalPositions;
 
-    // 1. Define Main Rachis (Local Space)
-    // Rachis goes from (0,0,0) downwards along -Z axis in local space of the ClusterRootComponent
-    const FVector RachisStart = FVector::ZeroVector;
-    const FVector RachisDirection = FVector(0, 0, -1); // Downwards
-    
     USplineComponent* RachisSpline = NewObject<USplineComponent>(NewActor);
     RachisSpline->RegisterComponent();
     RachisSpline->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
     RachisSpline->SetMobility(EComponentMobility::Movable);
 
-    FVector RachisEnd = RachisStart + RachisDirection * RachisLength;
+    TArray<FSplinePoint> RachisSplinePoints;
+    const FVector RachisStart = FVector::ZeroVector;
+    const FVector BaseRachisDirection = FVector(0, 0, -1); 
 
-    RachisSpline->SetSplinePoints({ RachisStart, RachisEnd }, ESplineCoordinateSpace::Local);
+    // Generate intermediate spline points for bending
+    for (int i = 0; i < RachisSegments; ++i)
+    {
+        float Alpha = (float)i / (float)(RachisSegments - 1);
+        FVector PointLocation = RachisStart + BaseRachisDirection * RachisLength * Alpha;
+        
+        FVector BendOffset = RachisBendAxis * RachisBendMagnitude * FMath::RandRange(0.8f, 1.2f); 
+        
+        PointLocation += BendOffset;
+
+        // Add randomness to each point's X/Y for a more organic look
+        PointLocation.X += FMath::RandRange(-20.0f, 20.0f);
+        PointLocation.Y += FMath::RandRange(-20.0f, 20.0f);
+
+        RachisSplinePoints.Add(FSplinePoint(i, PointLocation));
+    }
+    
+    RachisSpline->ClearSplinePoints();
+    RachisSpline->AddPoints(RachisSplinePoints, false);
+    RachisSpline->UpdateSpline(); 
     RachisSpline->SetClosedLoop(false);
 
     UStaticMesh* RachisMesh =  Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/cylinders/beam"));
-    USplineMeshComponent* RachisSplineMesh = NewObject<USplineMeshComponent>(NewActor);
-    RachisSplineMesh->RegisterComponent();
-    RachisSplineMesh->SetMobility(EComponentMobility::Movable);
+    
+    // Create multiple SplineMeshComponents for the rachis segments
+    for (int i = 0; i < RachisSpline->GetNumberOfSplinePoints() - 1; ++i)
+    {
+        USplineMeshComponent* RachisSplineMesh = NewObject<USplineMeshComponent>(NewActor);
+        RachisSplineMesh->RegisterComponent();
+        RachisSplineMesh->SetMobility(EComponentMobility::Movable);
+        RachisSplineMesh->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-    RachisSplineMesh->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+        FVector RStart, RTangent, REnd, RTangentEnd;
+        RachisSpline->GetLocationAndTangentAtSplinePoint(i, RStart, RTangent, ESplineCoordinateSpace::Local);
+        RachisSpline->GetLocationAndTangentAtSplinePoint(i + 1, REnd, RTangentEnd, ESplineCoordinateSpace::Local);
 
-    FVector RStart, RTangent, REnd, RTangentEnd;
-    RachisSpline->GetLocationAndTangentAtSplinePoint(0, RStart, RTangent, ESplineCoordinateSpace::Local);
-    RachisSpline->GetLocationAndTangentAtSplinePoint(1, REnd, RTangentEnd, ESplineCoordinateSpace::Local);
+        RachisSplineMesh->SetStaticMesh(RachisMesh);
+        RachisSplineMesh->SetStartAndEnd(RStart, RTangent, REnd, RTangentEnd);
+        RachisSplineMesh->SetForwardAxis(ESplineMeshAxis::X);
+    }
 
-    RachisSplineMesh->SetStaticMesh(RachisMesh);
-    RachisSplineMesh->SetStartAndEnd(RStart, RTangent, REnd, RTangentEnd);
-
-    // Store initial positions before relaxation
+    // Store initial positions
     TArray<FVector> InitialGrapePositions;
-
+    TArray<FVector> InitialConnectionPositions;
+    
     // Phyllotaxis constant (Golden Angle)
     const float GoldenAngle = 137.5f; // Degrees
     
@@ -85,36 +113,44 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
 
     for (int i = 0; i < NumGrapes; ++i)
     {
-        // 2. Determine Pedicel Attachment Point on Rachis
-        // Distribute attachment points along the rachis.
-        // We can use a slight curve or distribution, but linear is simplest to start.
-        // Using a square root distribution to make grapes denser at the top (wider part) of the cluster
-        float t = (float)i / (float)(NumGrapes -1 + KINDA_SMALL_NUMBER); // Normalized position along rachis [0,1]
-        float RachisPointT = 1 - FMath::Pow(t, 0.7f); // Makes points denser towards start of rachis (t=0)
-        FVector AttachmentPointOnRachis = RachisStart + RachisDirection * RachisPointT * RachisLength;
+        // Distribute attachment points along the rachis using its length
+        float RachisLengthAtPoint = FMath::Pow((float)i / (float)(NumGrapes - 1 + KINDA_SMALL_NUMBER), 2.5) * RachisSpline->GetSplineLength();
+        
+        FVector AttachmentPointOnRachis = RachisSpline->GetLocationAtDistanceAlongSpline(RachisLengthAtPoint, ESplineCoordinateSpace::Local);
+        FVector RachisTangent = RachisSpline->GetTangentAtDistanceAlongSpline(RachisLengthAtPoint, ESplineCoordinateSpace::Local);
+        RachisTangent.Normalize();
+        
+        // Adjust pedicel length based on distance along rachis (shorter at bottom)
+        float PedicelLengthRatio = 1.0f - (RachisLengthAtPoint / RachisSpline->GetSplineLength()); 
+        float PedicelLength = FMath::RandRange(PedicelLengthMin, PedicelLengthMax) * (0.5f + PedicelLengthRatio * 1.5f); 
 
-        // 3. Generate Pedicels
-        float PedicelLength = FMath::RandRange(PedicelLengthMin, PedicelLengthMax) * (2-RachisPointT) ;
-
-        // Pedicel direction: outwards and downwards relative to rachis.
-        // Use Golden Angle for radial distribution around the rachis.
         float RadialAngle = (float)i * GoldenAngle;
         
-        // Let's use UKismetMathLibrary::GetRandomUnitVectorInConeDegrees for a more robust approach
-        // The cone should be oriented away from the rachis direction at the attachment point.
-        // For simplicity, let's assume the rachis is mostly vertical.
-        // We want pedicels to point generally away from RachisDirection and slightly down.
-        // Create a vector perpendicular to rachis for the cone's main axis
-        FVector OrthoRachis = FVector(FMath::Cos(FMath::DegreesToRadians(RadialAngle)), FMath::Sin(FMath::DegreesToRadians(RadialAngle)), 0);
-        // Tilt this ortho vector slightly downwards
-        float DownTilt = FMath::RandRange(0.3f, 0.8f) * RachisPointT; // Mix with RachisDirection
-        FVector ConeAxis = (OrthoRachis * (1.0f - DownTilt) + RachisDirection * DownTilt).GetSafeNormal();
-        float ConeHalfAngle = 15.0f; // Small cone for pedicel direction variation
-        FVector PedicelDir = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ConeAxis, ConeHalfAngle);
+        // Generate a perpendicular vector to the RachisTangent
+        FVector OrthoPerpendicular = FVector::CrossProduct(RachisTangent, FVector(0,0,1));
+        if (OrthoPerpendicular.IsNearlyZero()) // If RachisTangent is aligned with Z
+        {
+            OrthoPerpendicular = FVector::CrossProduct(RachisTangent, FVector(0,1,0)); // Cross with Y-forward
+        }
+        OrthoPerpendicular.Normalize();
+
+        // Rotate the perpendicular vector around the RachisTangent by RadialAngle
+        FVector RotatedOrtho = OrthoPerpendicular.RotateAngleAxis(RadialAngle, RachisTangent);
+        
+        // Tilt the pedicel direction downwards and slightly outwards
+        // The more towards the bottom of the cluster, the more vertical they should become
+        float DownTiltWeight = FMath::Lerp(0.8f, 0.5f, RachisLengthAtPoint / RachisSpline->GetSplineLength());
+        
+        FVector PedicelDir = FMath::Lerp(FVector(0,0,-1), RotatedOrtho , DownTiltWeight).GetSafeNormal();
+
+        // Add a small cone variation
+        float ConeHalfAngle = 10.0f; 
+        PedicelDir = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(PedicelDir, ConeHalfAngle);
 
         // 4. Place Berries (Initial Position)
         FVector GrapePos = AttachmentPointOnRachis + PedicelDir * PedicelLength;
         InitialGrapePositions.Add(GrapePos);
+        InitialConnectionPositions.Add(AttachmentPointOnRachis);
 
         // Create spline for pedicel
         PedicelSpline = NewObject<USplineComponent>(NewActor);
@@ -122,10 +158,8 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
         PedicelSpline->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
         PedicelSpline->SetMobility(EComponentMobility::Movable);
 
+        // Pedicel spline goes from grape to attachment point on rachis
         PedicelSpline->SetSplinePoints({GrapePos, AttachmentPointOnRachis}, ESplineCoordinateSpace::Local);
-        UE_LOG(LogTemp, Warning, TEXT("GrapePos: X=%f Y=%f Z=%f"), GrapePos.X, GrapePos.Y, GrapePos.Z);
-        UE_LOG(LogTemp, Warning, TEXT("AttachmentPointOnRachis: X=%f Y=%f Z=%f"), AttachmentPointOnRachis.X, AttachmentPointOnRachis.Y, AttachmentPointOnRachis.Z);
-
         PedicelSpline->SetClosedLoop(false);
 
         // Create a spline mesh component for the pedicel
@@ -135,25 +169,21 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
         PedicelMesh->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
         
         // Set start and end positions and tangents for the spline mesh
-        FVector StartPos, StartTangent, EndPos, EndTangent;
-        PedicelSpline->GetLocationAndTangentAtSplinePoint(0, StartPos, StartTangent, ESplineCoordinateSpace::Local);
-        PedicelSpline->GetLocationAndTangentAtSplinePoint(1, EndPos, EndTangent, ESplineCoordinateSpace::Local);
+        FVector PedicelStartPos, PedicelStartTangent, PedicelEndPos, PedicelEndTangent;
+        PedicelSpline->GetLocationAndTangentAtSplinePoint(0, PedicelStartPos, PedicelStartTangent, ESplineCoordinateSpace::Local);
+        PedicelSpline->GetLocationAndTangentAtSplinePoint(1, PedicelEndPos, PedicelEndTangent, ESplineCoordinateSpace::Local);
 
         PedicelMesh->SetStaticMesh(StemMesh);
-
-        PedicelMesh->SetStartAndEnd(StartPos, StartTangent, EndPos, EndTangent);
+        PedicelMesh->SetStartAndEnd(PedicelStartPos, PedicelStartTangent, PedicelEndPos, PedicelEndTangent);
     }
-
-    // Make a copy for the relaxation process
-    GrapeFinalPositions = InitialGrapePositions;
-
+    
     // Apply random hue, saturation, value variation to the dynamic material
     float Hue = FMath::FRandRange(0, 0.3);
-    float Value = FMath::FRandRange(0.f, 0);
+    float Value = FMath::FRandRange(0.f, 0); 
     float Saturation = FMath::FRandRange(0.f, 0);
 
     // Create grape mesh components at generated positions
-    for (int i = 0; i < GrapeFinalPositions.Num(); i++)
+    for (int i = 0; i < InitialGrapePositions.Num(); i++)
     {
        UStaticMesh* RandomGrapeMesh = Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/"));
 
@@ -163,45 +193,34 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
        {
            GrapeComp->SetStaticMesh(RandomGrapeMesh);
            GrapeComp->RegisterComponent();
-           // Attach to the ClusterRootComponent we created for the actor
            GrapeComp->AttachToComponent(ClusterRootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
            FTransform LocalTransform;
-           LocalTransform.SetLocation(GrapeFinalPositions[i]);
-           // Optionally, add random rotation and scale variation to each grape
+           FVector GrapePosition = InitialGrapePositions[i];
+           LocalTransform.SetLocation(GrapePosition);
            float RandomScale = FMath::RandRange(0.8f, 1.2f);
-           LocalTransform.SetScale3D(FVector(RandomScale)); // Scale based on its generated radius relative to max
-           
-            // --- NEW ROTATION LOGIC ---
-           FVector GrapePosition = GrapeFinalPositions[i];
-           
-           // 1. Find the closest point on the rachis to the grape
-           // Project the grape's position onto the rachis line (defined by RachisStart and RachisDirection)
-           FVector PointOnRachis = FMath::ClosestPointOnLine(RachisStart, RachisDirection * RachisLength, GrapePosition) + FVector(0, 0, 50);
-           
-           // 2. Determine the direction from the grape to the rachis point
-           // This vector points from the grape *towards* the rachis.
-           FVector DirectionToRachis = (PointOnRachis - GrapePosition).GetSafeNormal();
-           
-           FQuat TargetQuat = FQuat::FindBetweenVectors(FVector(0,0,1), DirectionToRachis); // Align mesh's Z with DirectionToRachis
+           LocalTransform.SetScale3D(FVector(RandomScale));
 
-           // Add a small random twist around the rachis direction (like grapes naturally jostle)
-           float RandomYaw = FMath::RandRange(-30.f, 30.f); // Random +/- 30 degrees
+           FVector AttachmentPointOnRachis = InitialConnectionPositions[i];
+           FVector DirectionToRachis = (AttachmentPointOnRachis - GrapePosition).GetSafeNormal();
+           
+           // Align the grape's Z-axis with the DirectionToRachis
+           FQuat TargetQuat = FQuat::FindBetweenVectors(FVector(0,0,1), DirectionToRachis); 
+
+           // Add a small random twist around the DirectionToRachis (local Z)
+           float RandomYaw = FMath::RandRange(-45.f, 45.f); 
            FQuat RandomTwistQuat = FQuat(DirectionToRachis, FMath::DegreesToRadians(RandomYaw));
            
-           LocalTransform.SetRotation(RandomTwistQuat * TargetQuat); // Apply twist *after* aligning Z
+           LocalTransform.SetRotation(RandomTwistQuat * TargetQuat); 
 
            GrapeComp->SetRelativeTransform(LocalTransform);
        }
 
         FString PackagePath = TEXT("/game/generated_materials");
-        FString AssetName = TEXT("generated_material");
+        FString AssetName = TEXT("generated_material"); 
 
         UMaterialInstanceConstant* DynMaterial = Util::CreateMaterialInstance(RandomGrapeMesh->GetMaterial(0), PackagePath, AssetName);
 
-        
-
-        // Assuming the material has parameters named "Hue", "Value", "Saturation", "IsCracked"
         DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue + FMath::FRandRange(-0.02f, 0.02f));
         DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value+ FMath::FRandRange(-0.02f, 0.02f));
         DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation + FMath::FRandRange(-0.02f, 0.02f));
