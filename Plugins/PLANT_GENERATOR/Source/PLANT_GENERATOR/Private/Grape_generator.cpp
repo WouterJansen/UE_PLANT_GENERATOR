@@ -8,8 +8,6 @@
 #include "Math/UnrealMathUtility.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
-#include "Materials/MaterialInstanceConstant.h"
-
 
 Grape_generator::Grape_generator()
 {
@@ -81,7 +79,7 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
     RachisSpline->UpdateSpline(); 
     RachisSpline->SetClosedLoop(false);
 
-    UStaticMesh* RachisMesh =  Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/cylinders/small_beam"));
+    UStaticMesh* RachisMesh =  Util::GetRandomMeshFromFolder(TEXT("/PLANT_GENERATOR/Grape/cylinders/beam"));
     
     // Create multiple SplineMeshComponents for the rachis segments
     for (int i = 0; i < RachisSpline->GetNumberOfSplinePoints() - 1; ++i)
@@ -228,16 +226,12 @@ AActor* Grape_generator::CreateVariation(TMap<FString, float> parameters, FTrans
         FString PackagePath = TEXT("/game/generated_materials");
         FString AssetName = TEXT("generated_material"); 
 
-        UMaterialInstanceConstant* DynMaterial = Util::CreateMaterialInstance(RandomGrapeMesh->GetMaterial(0), PackagePath, AssetName);
-
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Hue"), Hue + FMath::FRandRange(-0.02f, 0.02f));
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Value"), Value+ FMath::FRandRange(-0.01f, 0.01f));
-        DynMaterial->SetScalarParameterValueEditorOnly(FName("Saturation"), Saturation + FMath::FRandRange(-0.1f, 0.1f));
-
-        Util::SavePackage(DynMaterial);
+        UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(RandomGrapeMesh->GetMaterial(0), GetTransientPackage());
+        DynMaterial->SetScalarParameterValue(FName("Hue"), Hue + FMath::FRandRange(-0.02f, 0.02f));
+        DynMaterial->SetScalarParameterValue(FName("Value"), Value+ FMath::FRandRange(-0.01f, 0.01f));
+        DynMaterial->SetScalarParameterValue(FName("Saturation"), Saturation + FMath::FRandRange(-0.1f, 0.1f));
         GrapeComp->SetMaterial(0, DynMaterial);
-        
     }
-
+    
     return NewActor;
 }
