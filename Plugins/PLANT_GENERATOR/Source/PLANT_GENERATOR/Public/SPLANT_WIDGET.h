@@ -2,9 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
-#include "Corn_generator.h"
-#include "Carrot_generator.h"
-#include "Grape_generator.h"
 
 class SPLANT_WIDGET : public SCompoundWidget
 {

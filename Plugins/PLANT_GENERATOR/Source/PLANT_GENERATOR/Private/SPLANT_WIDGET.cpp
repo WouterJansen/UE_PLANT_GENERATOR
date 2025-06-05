@@ -270,7 +270,7 @@ FReply SPLANT_WIDGET::OnGenerateClicked()
         {
             FVector location(i * 100.0f, 0.0f, 0.0f); 
             FTransform transform(location);   
-            UCrop_Generator::Create_variations(Plant_types::Carrot, transform, parameters);
+            UCrop_Generator::Create_variation(Plant_types::Corn, transform, parameters);
         }
     }
     else if (*SelectedOption == "Carrot")
@@ -280,17 +280,16 @@ FReply SPLANT_WIDGET::OnGenerateClicked()
         {
             FVector location(i * 100.0f, 0.0f, 0.0f); 
             FTransform transform(location); 
-            UCrop_Generator::Create_variations(Plant_types::Carrot, transform, parameters);
+            UCrop_Generator::Create_variation(Plant_types::Carrot, transform, parameters);
         }
     }
     else if (*SelectedOption == "Grape")
     {
-        GEditor->GetEditorWorldContext().World()->bIsRunningConstructionScript = false;
         for (int i = 0; i < amount;i++)
         {
             FVector location(i * 1000.0f, 0.0f, 0.0f); 
             FTransform transform(location); 
-            UCrop_Generator::Create_variations(Plant_types::Grape, transform, parameters);
+            UCrop_Generator::Create_variation(Plant_types::Grape, transform, parameters);
         }
     }
     return FReply::Handled();
