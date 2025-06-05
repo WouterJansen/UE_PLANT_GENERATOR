@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/StaticMeshActor.h"
-#include "ACarrotActor.generated.h"
+#include "CarrotActor.generated.h"
 
 UCLASS()
 class PLANT_GENERATOR_API ACarrotActor : public AStaticMeshActor

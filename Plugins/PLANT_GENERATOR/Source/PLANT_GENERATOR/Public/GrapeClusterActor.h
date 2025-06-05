@@ -7,7 +7,7 @@
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "AGrapeClusterActor.generated.h"
+#include "GrapeClusterActor.generated.h"
 
 UCLASS()
 class PLANT_GENERATOR_API AGrapeClusterActor : public AActor

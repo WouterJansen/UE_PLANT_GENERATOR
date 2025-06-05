@@ -1,6 +1,7 @@
 ﻿#include "Crop_generator.h"
-#include "AGrapeClusterActor.h"
-#include "ACarrotActor.h"
+#include "GrapeClusterActor.h"
+#include "CarrotActor.h"
+#include "CornActor.h"
 
 AActor* UCrop_Generator::Create_variation(Plant_types GeneratorType, FTransform Location, TMap<FString, float> parameters)
 {
@@ -16,7 +17,14 @@ AActor* UCrop_Generator::Create_variation(Plant_types GeneratorType, FTransform 
 			return NewCarrot;
 		}
 	case Plant_types::Corn:
-		return nullptr;
+		{
+			ACornActor* NewCorn = GWorld->SpawnActor<ACornActor>(Location.GetLocation(), Location.GetRotation().Rotator());
+			if (NewCorn)
+			{
+				NewCorn->GenerateCorn(parameters); 
+			}
+			return NewCorn;
+		}
 	case Plant_types::Grape:
 		{
 			AGrapeClusterActor* NewGrapeCluster = GWorld->SpawnActor<AGrapeClusterActor>(Location.GetLocation(), Location.GetRotation().Rotator());
