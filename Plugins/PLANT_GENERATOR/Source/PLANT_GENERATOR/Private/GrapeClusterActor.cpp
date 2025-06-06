@@ -9,11 +9,11 @@ AGrapeClusterActor::AGrapeClusterActor()
 
     SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
     SetRootComponent(SceneRoot);
-    SceneRoot->SetMobility(EComponentMobility::Static); 
+    SceneRoot->SetMobility(EComponentMobility::Movable); 
 
     RachisSpline = CreateDefaultSubobject<USplineComponent>(TEXT("RachisSpline"));
     RachisSpline->AttachToComponent(SceneRoot, FAttachmentTransformRules::KeepRelativeTransform);
-    RachisSpline->SetMobility(EComponentMobility::Static); 
+    RachisSpline->SetMobility(EComponentMobility::Movable); 
 }
 
 void AGrapeClusterActor::BeginPlay()

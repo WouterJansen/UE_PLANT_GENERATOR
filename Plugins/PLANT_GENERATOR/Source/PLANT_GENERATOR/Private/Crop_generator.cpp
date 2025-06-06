@@ -2,6 +2,7 @@
 #include "GrapeClusterActor.h"
 #include "CarrotActor.h"
 #include "CornActor.h"
+#include "AppleActor.h"
 
 AActor* UCrop_Generator::Create_variation(Plant_types GeneratorType, FTransform Location, TMap<FString, float> parameters)
 {
@@ -33,6 +34,15 @@ AActor* UCrop_Generator::Create_variation(Plant_types GeneratorType, FTransform 
 				NewGrapeCluster->GenerateGrapeCluster(parameters); 
 			}
 			return NewGrapeCluster; 
+		}
+	case Plant_types::Apple:
+		{
+			AAppleActor* Apple = GWorld->SpawnActor<AAppleActor>(Location.GetLocation(), Location.GetRotation().Rotator());
+			if (Apple)
+			{
+				Apple->GenerateApple(parameters); 
+			}
+			return Apple; 
 		}
 	default:
 		return nullptr;
