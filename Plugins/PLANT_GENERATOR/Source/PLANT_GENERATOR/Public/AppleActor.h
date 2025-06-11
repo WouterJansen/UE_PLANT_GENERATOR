@@ -24,4 +24,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Apple Generation") 
 	void GenerateApple(TMap<FString, float> parameters);
 
+private:
+	float m_MinHueVariation;
+	float m_MaxHueVariation;
+	float m_SaturationVariation;
+	float m_ValueVariation;
 };

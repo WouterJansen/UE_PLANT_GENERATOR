@@ -12,6 +12,7 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
     Options.Add(MakeShared<FString>("Corn"));
     Options.Add(MakeShared<FString>("Carrot"));
     Options.Add(MakeShared<FString>("Grape"));
+    Options.Add(MakeShared<FString>("Apple"));
 
     // Default selected option
     SelectedOption = Options[0];
@@ -187,6 +188,39 @@ void SPLANT_WIDGET::Construct(const FArguments& InArgs)
            ]
         ]
 
+        // Apple-specific controls
+        + SVerticalBox::Slot()
+        .AutoHeight()
+        .Padding(5)
+        [
+            SAssignNew(AppleControls, SVerticalBox)
+            // Only visible when Apple is selected
+            .Visibility_Lambda([this]() {
+                return *SelectedOption == "Apple" ? EVisibility::Visible : EVisibility::Collapsed;
+            })
+            
+            // Example Apple control
+           // Number of generations
+           + SVerticalBox::Slot()
+           .AutoHeight()
+           .Padding(5)
+           [
+               SNew(SHorizontalBox)
+               + SHorizontalBox::Slot()
+               .AutoWidth()
+               [
+                   SNew(STextBlock)
+                   .Text(FText::FromString("Amount:"))
+               ]
+               + SHorizontalBox::Slot()
+               [
+                   SNew(SSpinBox<int>)
+                   .Value(this->amount)
+                   .OnValueChanged(this, &SPLANT_WIDGET::OnAmountChanged)
+               ]
+           ]
+        ]
+
         // Generate button - shown for all options
         + SVerticalBox::Slot()
         .AutoHeight()
@@ -239,6 +273,10 @@ void SPLANT_WIDGET::OnSelectionChanged(TSharedPtr<FString> NewValue, ESelectInfo
     {
         GrapeControls->SetVisibility(*SelectedOption == "Grape" ? EVisibility::Visible : EVisibility::Collapsed);
     }
+    if (AppleControls.IsValid())
+    {
+        AppleControls->SetVisibility(*SelectedOption == "Apple" ? EVisibility::Visible : EVisibility::Collapsed);
+    }
 }
 
 // Get selected dropdown text
@@ -290,6 +328,15 @@ FReply SPLANT_WIDGET::OnGenerateClicked()
             FVector location(i * 1000.0f, 0.0f, 0.0f); 
             FTransform transform(location); 
             UCrop_Generator::Create_variation(Plant_types::Grape, transform, parameters);
+        }
+    }
+    else if (*SelectedOption == "Apple")
+    {
+        for (int i = 0; i < amount;i++)
+        {
+            FVector location(i * 1000.0f, 0.0f, 0.0f); 
+            FTransform transform(location); 
+            UCrop_Generator::Create_variation(Plant_types::Apple, transform, parameters);
         }
     }
     return FReply::Handled();

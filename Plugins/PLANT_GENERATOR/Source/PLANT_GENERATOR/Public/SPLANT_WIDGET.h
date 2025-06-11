@@ -22,6 +22,7 @@ private:
 	TSharedPtr<SVerticalBox> CornControls;
 	TSharedPtr<SVerticalBox> CarrotControls;
 	TSharedPtr<SVerticalBox> GrapeControls;
+	TSharedPtr<SVerticalBox> AppleControls;
 
 	FText GetSelectedOptionText() const;
 	void OnPlantAgeChanged(float Value);
