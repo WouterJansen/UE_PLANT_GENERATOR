@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Engine/StaticMeshActor.h"
 #include "AppleActor.generated.h"
 
 UCLASS()
-class PLANT_GENERATOR_API AAppleActor : public AActor
+class PLANT_GENERATOR_API AAppleActor : public AStaticMeshActor
 {
 	GENERATED_BODY()
 	
@@ -18,7 +18,10 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Grape Cluster Generation") 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Apple")
+	UStaticMeshComponent* Apple;
+
+	UFUNCTION(BlueprintCallable, Category = "Apple Generation") 
 	void GenerateApple(TMap<FString, float> parameters);
 
 };
