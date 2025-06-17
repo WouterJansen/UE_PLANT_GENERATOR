@@ -8,10 +8,10 @@ AAppleActor::AAppleActor()
 	Apple = this->GetStaticMeshComponent();
 	Apple->SetMobility(EComponentMobility::Movable);
 
-	m_MinHueVariation = 0.02f;
-	m_MaxHueVariation = 0.02f;
-	m_SaturationVariation = 0.02f;
-	m_ValueVariation = 0.02f;
+	m_MinHueVariation = 0.1f;
+	m_MaxHueVariation = 0.1f;
+	m_SaturationVariation = 0.1f;
+	m_ValueVariation = 0.1f;
 
 }
 
