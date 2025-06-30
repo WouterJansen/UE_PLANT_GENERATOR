@@ -8,10 +8,13 @@ AAppleActor::AAppleActor()
 	Apple = this->GetStaticMeshComponent();
 	Apple->SetMobility(EComponentMobility::Movable);
 
-	m_MinHueVariation = 0.1f;
-	m_MaxHueVariation = 0.1f;
-	m_SaturationVariation = 0.1f;
-	m_ValueVariation = 0.1f;
+	
+	m_MinSaturationVariation = 0.5f;
+	m_MaxSaturationVariation = 1.5f;
+	m_MinBrightnessVariation = 0.5f;
+	m_MaxBrightnessVariation = 1.5f;
+	m_MinContrastVariation = 0.5f;
+	m_MaxContrastVariation = 1.5f;
 
 }
 
@@ -38,15 +41,13 @@ void AAppleActor::GenerateApple(TMap<FString, float> parameters)
 	UMaterialInterface* BaseMaterial = Apple->GetMaterial(0);
 	UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
 
-	float Hue = FMath::FRandRange(-m_MinHueVariation, m_MaxHueVariation);
-	float Value = FMath::FRandRange(-m_ValueVariation, m_ValueVariation);
-	float Saturation = FMath::FRandRange(-m_SaturationVariation, m_SaturationVariation);
+	float Saturation = FMath::FRandRange(m_MinSaturationVariation, m_MaxSaturationVariation);
+	float Brightness = FMath::FRandRange(m_MinBrightnessVariation, m_MaxBrightnessVariation);
+	float Contrast = FMath::FRandRange(m_MinContrastVariation, m_MaxContrastVariation);
 	
-	DynMaterial->SetScalarParameterValue("Hue", Hue);
-	DynMaterial->SetScalarParameterValue("Value", Value);
-	DynMaterial->SetScalarParameterValue("Sat", Saturation);
-	DynMaterial->SetScalarParameterValue("Brightness", Saturation + 1);
-	DynMaterial->SetScalarParameterValue("Contrast", Saturation + 1);
+	DynMaterial->SetScalarParameterValue("Saturation", Saturation);
+	DynMaterial->SetScalarParameterValue("Brightness", Brightness);
+	DynMaterial->SetScalarParameterValue("Contrast", Contrast);
 
 	Apple->SetMaterial(0, DynMaterial);
 	

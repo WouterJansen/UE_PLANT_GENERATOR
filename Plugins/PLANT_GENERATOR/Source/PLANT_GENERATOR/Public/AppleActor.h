@@ -25,8 +25,10 @@ public:
 	void GenerateApple(TMap<FString, float> parameters);
 
 private:
-	float m_MinHueVariation;
-	float m_MaxHueVariation;
-	float m_SaturationVariation;
-	float m_ValueVariation;
+	float m_MinSaturationVariation;
+	float m_MaxSaturationVariation;
+	float m_MinBrightnessVariation;
+	float m_MaxBrightnessVariation;
+	float m_MinContrastVariation;
+	float m_MaxContrastVariation;
 };
