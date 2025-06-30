@@ -41,24 +41,25 @@ void ACornActor::Tick(float DeltaTime)
 
 void ACornActor::GenerateCorn(TMap<FString, float> parameters)
 {
-	float plantage = parameters.FindRef("PlantAge", 0.5);
+	float plantAge = parameters.FindRef("PlantAge", 0.5);
+	float leafDensity = parameters.FindRef("LeafDensity", 1.0f);
 	
 	UStaticMesh* RandomStem = Util::GetRandomMeshFromFolder("/PLANT_GENERATOR/Corn/Stem/");
 	CornStem->SetStaticMesh(RandomStem);
 
 	FVector NewScale = FVector(
 	FMath::Clamp(
-		m_stem_ScaleRange_x_y.X + (m_stem_ScaleRange_x_y.Y - m_stem_ScaleRange_x_y.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
+		m_stem_ScaleRange_x_y.X + (m_stem_ScaleRange_x_y.Y - m_stem_ScaleRange_x_y.X) * FMath::Sqrt(plantAge) + FMath::RandRange(-0.1f, 0.1f),
 		m_stem_ScaleRange_x_y.X,
 		m_stem_ScaleRange_x_y.Y
 	),
 		FMath::Clamp(
-			m_stem_ScaleRange_x_y.X + (m_stem_ScaleRange_x_y.Y - m_stem_ScaleRange_x_y.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
+			m_stem_ScaleRange_x_y.X + (m_stem_ScaleRange_x_y.Y - m_stem_ScaleRange_x_y.X) * FMath::Sqrt(plantAge) + FMath::RandRange(-0.1f, 0.1f),
 			m_stem_ScaleRange_x_y.X,
 			m_stem_ScaleRange_x_y.Y
 		),
 		FMath::Clamp(
-		  m_stem_ScaleRange_z.X + (m_stem_ScaleRange_z.Y - m_stem_ScaleRange_z.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
+		  m_stem_ScaleRange_z.X + (m_stem_ScaleRange_z.Y - m_stem_ScaleRange_z.X) * FMath::Sqrt(plantAge) + FMath::RandRange(-0.1f, 0.1f),
 		m_stem_ScaleRange_z.X,
 		m_stem_ScaleRange_z.Y
 		)
@@ -71,9 +72,9 @@ void ACornActor::GenerateCorn(TMap<FString, float> parameters)
 	if (DynMaterial)
 	{
 		// Apply slight individual variations
-		DynMaterial->SetScalarParameterValue(FName("Hue"), (1 - plantage) * m_stem_HueVariation + FMath::FRandRange(-0.05, 0.05));
-		DynMaterial->SetScalarParameterValue(FName("Value"), (1 - plantage) * m_stem_SaturationVariation + FMath::FRandRange(-0.05, 0.05));
-		DynMaterial->SetScalarParameterValue(FName("Saturation"), (1 - plantage) * m_stem_ValueVariation + FMath::FRandRange(-0.05, 0.05));
+		DynMaterial->SetScalarParameterValue(FName("Hue"), (1 - plantAge) * m_stem_HueVariation + FMath::FRandRange(-0.05, 0.05));
+		DynMaterial->SetScalarParameterValue(FName("Value"), (1 - plantAge) * m_stem_SaturationVariation + FMath::FRandRange(-0.05, 0.05));
+		DynMaterial->SetScalarParameterValue(FName("Saturation"), (1 - plantAge) * m_stem_ValueVariation + FMath::FRandRange(-0.05, 0.05));
 		CornStem->SetMaterial(0, DynMaterial);
 	}
 	
@@ -88,6 +89,8 @@ void ACornActor::GenerateCorn(TMap<FString, float> parameters)
 
 	// Create leaves and position them along the stem
 	int numLeaves = FMath::FloorToInt(FMath::RandRange(4, 8) * (stemHeight / 65));
+
+	numLeaves = FMath::FloorToInt(numLeaves * leafDensity);
 
 	float zStep = (zPositionRange.Y - zPositionRange.X) / (numLeaves / 2 + 1);
 
@@ -105,17 +108,17 @@ void ACornActor::GenerateCorn(TMap<FString, float> parameters)
 
 		NewScale = FVector(
 		FMath::Clamp(
-			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
+			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantAge) + FMath::RandRange(-0.1f, 0.1f),
 			m_leaf_ScaleRange.X,
 			m_leaf_ScaleRange.Y
 		),
 		FMath::Clamp(
-			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
+			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantAge) + FMath::RandRange(-0.1f, 0.1f),
 			m_leaf_ScaleRange.X,
 			m_leaf_ScaleRange.Y
 		),
 		FMath::Clamp(
-			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantage) + FMath::RandRange(-0.1f, 0.1f),
+			m_leaf_ScaleRange.X + (m_leaf_ScaleRange.Y - m_leaf_ScaleRange.X) * FMath::Sqrt(plantAge) + FMath::RandRange(-0.1f, 0.1f),
 			m_leaf_ScaleRange.X,
 			m_leaf_ScaleRange.Y
 		)
@@ -128,7 +131,7 @@ void ACornActor::GenerateCorn(TMap<FString, float> parameters)
 			FMath::RandRange(m_leaf_ShearFactorRange_x_y.X, m_leaf_ShearFactorRange_x_y.Y),
 			FMath::RandRange(m_leaf_ShearFactorRange_x_y.X, m_leaf_ShearFactorRange_x_y.Y),
 			FMath::Clamp(
-				m_leaf_ShearFactorRange_z.X + (m_leaf_ShearFactorRange_z.Y - m_leaf_ShearFactorRange_z.X) * plantage + FMath::RandRange(-0.1f, 0.1f),
+				m_leaf_ShearFactorRange_z.X + (m_leaf_ShearFactorRange_z.Y - m_leaf_ShearFactorRange_z.X) * plantAge + FMath::RandRange(-0.1f, 0.1f),
 				m_leaf_ShearFactorRange_z.X,
 				m_leaf_ShearFactorRange_z.Y
 			)
@@ -152,9 +155,9 @@ void ACornActor::GenerateCorn(TMap<FString, float> parameters)
 		if (DynMaterial)
 		{
 			// Apply slight individual variations
-			DynMaterial->SetScalarParameterValue(FName("Hue"), (1 - plantage) * m_leaf_HueVariation + FMath::FRandRange(-0.05, 0.05));
-			DynMaterial->SetScalarParameterValue(FName("Value"), (1 - plantage) * m_leaf_SaturationVariation + FMath::FRandRange(-0.05, 0.05));
-			DynMaterial->SetScalarParameterValue(FName("Saturation"), (1 - plantage) * m_leaf_ValueVariation + FMath::FRandRange(-0.05, 0.05));
+			DynMaterial->SetScalarParameterValue(FName("Hue"), (1 - plantAge) * m_leaf_HueVariation + FMath::FRandRange(-0.05, 0.05));
+			DynMaterial->SetScalarParameterValue(FName("Value"), (1 - plantAge) * m_leaf_SaturationVariation + FMath::FRandRange(-0.05, 0.05));
+			DynMaterial->SetScalarParameterValue(FName("Saturation"), (1 - plantAge) * m_leaf_ValueVariation + FMath::FRandRange(-0.05, 0.05));
 			LeafComp->SetMaterial(0, DynMaterial);
 		}
 

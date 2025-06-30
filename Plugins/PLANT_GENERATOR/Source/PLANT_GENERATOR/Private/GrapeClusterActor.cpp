@@ -71,21 +71,19 @@ void AGrapeClusterActor::GenerateGrapeCluster(TMap<FString, float> parameters)
 {
     ClearGrapeCluster();
 
-    const float RachisLength = FMath::RandRange(parameters.FindRef("RachisLengthMin", 500.0f), parameters.FindRef("RachisLengthMax", 1100.0f)); 
-    
-    const float PedicelLengthMin = FMath::RandRange(parameters.FindRef("PedicelLengthMin", 25.f), parameters.FindRef("PedicelLengthMinMax", 100.f));
-    const float PedicelLengthMax = FMath::RandRange(parameters.FindRef("PedicelLengthMaxMin", 100.f), parameters.FindRef("PedicelLengthMaxMax", 200.f));
-    
-    const int RachisSegments = FMath::RandRange(parameters.FindRef("RachisSegmentsMin", 3.0f), parameters.FindRef("RachisSegmentsMax", 6.0f));
-    const float RachisBendMagnitude = FMath::RandRange(parameters.FindRef("RachisBendMagnitudeMin", 150.0f), parameters.FindRef("RachisBendMagnitudeMax", 1000.0f));
+    const float RachisLength = FMath::RandRange(parameters.FindRef("RachisLengthMin", 500.0f), parameters.FindRef("RachisLengthMax", 1100.0f));
+    const float PedicelLengthMin = parameters.FindRef("PedicelLengthMin", 25.);
+    const float PedicelLengthMax = parameters.FindRef("PedicelLengthMax", 200.);
+    const bool IsPurple = (bool)parameters.FindRef("IsPurple", false);
 
+    const int RachisSegments = FMath::RandRange( 3.0f, 6.0f);
+    const float RachisBendMagnitude = FMath::RandRange( 150.0f, 1000.0f);
     const FVector RachisBendAxis = FVector(
-        FMath::RandRange(parameters.FindRef("RachisBendAxisXmin", 0.0f), parameters.FindRef("RachisBendAxisXmax", 1.0f)),
-        FMath::RandRange(parameters.FindRef("RachisBendAxisYmin", 0.0f), parameters.FindRef("RachisBendAxisYmax", 1.0f)),
-        FMath::RandRange(parameters.FindRef("RachisBendAxisZmin", 0.0f), parameters.FindRef("RachisBendAxisXmax", 1.0f))
+        FMath::RandRange(0.0f, 1.0f),
+        FMath::RandRange(0.0f, 1.0f),
+        FMath::RandRange(0.0f, 1.0f)
     ).GetSafeNormal();
 
-    const bool IsPurple = (bool)parameters.FindRef("IsPurple", false);
 
     TArray<FSplinePoint> TempRachisSplinePoints;
     const FVector RachisStart = FVector::ZeroVector;
