@@ -9,7 +9,6 @@ public class UE_PLANT_GENERATOREditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
 		ExtraModuleNames.Add("UE_PLANT_GENERATOR");
 	}
 }
