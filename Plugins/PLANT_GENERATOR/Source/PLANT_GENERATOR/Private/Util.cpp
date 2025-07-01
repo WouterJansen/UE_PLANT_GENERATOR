@@ -4,6 +4,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
+#include "UObject/SavePackage.h"
 #include "Materials/MaterialInstanceConstant.h"
 
 Util::Util()
@@ -80,8 +81,9 @@ void Util::SavePackage(UMaterialInstanceConstant* DynMaterial)
 	DynMaterial->PostEditChange();
 	DynMaterial->MarkPackageDirty();
 	FAssetRegistryModule::AssetCreated(DynMaterial);
-	UPackage::SavePackage(DynMaterial->GetPackage(), DynMaterial, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FPackageName::LongPackageNameToFilename(
-		DynMaterial->GetOutermost()->GetName(), TEXT(".uasset")));
+	FSavePackageArgs SavePackageArgs;
+	SavePackageArgs.TopLevelFlags = EObjectFlags::RF_Public | EObjectFlags::RF_Standalone;
+	UPackage::SavePackage(DynMaterial->GetPackage(), DynMaterial, *FPackageName::LongPackageNameToFilename(DynMaterial->GetOutermost()->GetName(), TEXT(".uasset")), SavePackageArgs);
 }
 
 UMaterialInstanceConstant* Util::CopyMaterialInstanceConstant(UMaterialInstanceConstant* SourceMIC, const FString& BaseAssetName, const FString& PackagePath)
