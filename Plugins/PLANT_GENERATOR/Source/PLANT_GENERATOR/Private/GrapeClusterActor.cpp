@@ -255,4 +255,9 @@ void AGrapeClusterActor::GenerateGrapeCluster(TMap<FString, float> parameters)
             GrapeComp->SetMaterial(0, DynMaterial);
         }
     }
+
+    FVector TopOfStemWorld = RachisSpline->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World);
+    FVector CurrentRootWorld = SceneRoot->GetComponentLocation();
+    FVector Offset = TopOfStemWorld - CurrentRootWorld;
+    RachisSpline->AddWorldOffset(-Offset);
 }
